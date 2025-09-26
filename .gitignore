@@ -1,0 +1,28 @@
+# Python stuff
+__pycache__/
+*.py[codz]
+.venv/
+venv/
+env/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# IDE stuff
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs and notes
+*.log
+TODO.txt
+
+# Test file
+main.py
+
+
+

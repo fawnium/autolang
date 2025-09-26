@@ -1,0 +1,23 @@
+[build-system]
+requires = ['setuptools>=61.0', 'wheel']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'autolang'
+version = '0.1.0'
+description = 'A simple python project for simulating finite state automata, formal languages and grammars, and Turing machines.'
+readme = 'README.md'
+license = {file = 'LICENSE'}
+authors = [
+    { name='fawnium', email='oisinlyons1@gmail.com'}
+]
+requires-python = '>=3.12'
+
+[project.urls]
+Homepage = 'https://github.com/fawnium/autolang'
+
+[tool.setuptools]
+package-dir = {'' = 'src'}
+
+[tool.setuptools.packages.find]
+where = ['src']
