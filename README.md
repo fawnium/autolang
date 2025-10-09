@@ -1,10 +1,17 @@
 # autolang v0.1.0
 
-*README last updated 18/09/2025*
+*README last updated 09/10/2025*
 
 *autolang* is a simple Python project based around finite-state automata, formal languages and grammars, and Turing machines. It is intended for educational use, so that students who are studying the theory within this area may supplement their understanding by creating and running their own real automata to see how they work. 
 
 The project is heavily based on the theory from *Introduction to the Theory of Computation* by Michael Sipser.
+
+> [!WARNING]
+> A critical memory bug has been discovered in the current version, which can potentially freeze your system.
+> Calling the `.L()` method of an automata object, or another method which generates all words over an alphabet, will attempt to allocate memory for the *entire* alphabet simultaneously.
+> This can run into several GB of memory for even moderate-length alphabets. There are no safety measures for this at either the *autolang* or Python level.
+> To avoid this issue, only use small lengths for alphabet size, e.g. `.L(10)` and **not** `.L(30)`. Safety will vary depending on the number of letters in the alphabet, so always stay under length 10 to be safe and avoid system freezes.
+> This bug will be patched within the next 7 days.
 
 - **version** : 0.1.0
 - **license** : MIT standard license
