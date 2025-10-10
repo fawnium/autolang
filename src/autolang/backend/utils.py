@@ -50,6 +50,15 @@ def words_of_length(n: int, alphabet: Iterable[str], lazy = True) -> Generator[s
     '''
     if n < 0:
         raise ValueError('Argument \'n\' must be non-negative.')
+    # Check memory safety if returning whole tuple
+    if not lazy:
+        limit = get_max_words_size()
+        size = get_alphabet_size_single_length(n, len(alphabet))
+        if size >= limit:
+            proceed = input(f'WARNING: using non-lazy word generation for {size} total words may cause system memory overflow. Proceed anyway? (Y/n): ')
+            if proceed != 'Y':
+                raise MemoryError('Too many words requested to generate in memory.')
+            
     words = _words_of_length_gen(n, tuple(alphabet)) # Generator for words of length n
     return words if lazy else tuple(words)
 
@@ -64,6 +73,15 @@ def words_to_length(n: int, alphabet: Iterable[str], lazy = True) -> Generator[s
     '''
     if n < 0:
         raise ValueError('Argument \'n\' must be non-negative.')
+    # Check memory safety if returning whole tuple
+    if not lazy:
+        limit = get_max_words_size()
+        size = get_alphabet_size_all_lengths(n, len(alphabet))
+        if size >= limit:
+            proceed = input(f'WARNING: using non-lazy word generation for {size} total words may cause system memory overflow. Proceed anyway? (Y/n): ')
+            if proceed != 'Y':
+                raise MemoryError('Too many words requested to generate in memory.')
+            
     # Generator for words of length n or less
     def _gen():
         for i in range(n + 1):
