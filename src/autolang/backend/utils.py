@@ -44,7 +44,7 @@ def _words_of_length_gen(n: int, alphabet: tuple[str, ...]) -> Generator[str]:
 # if lazy = False, returns all words as tuple in-memory
 def words_of_length(n: int, alphabet: Iterable[str], lazy = True) -> Generator[str] | tuple[str, ...]:
     '''
-    - convert alphabet to tuple before generating alphabet
+    - convert alphabet to tuple before generating words
     - in particular ensure hashable for lru cache
         - NOTE lru cache no longer used, but ensure hashability just in case
     '''
