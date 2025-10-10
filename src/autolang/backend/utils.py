@@ -1,4 +1,3 @@
-from functools import lru_cache
 from collections.abc import Iterable, Generator
 import re
 
@@ -14,12 +13,15 @@ def get_max_words_size() -> int:
 
 # Number of words of length exactly n for given number of alphabet letters
 def get_alphabet_size_single_length(n: int, len_alphabet: int) -> int:
-    pass # TODO
+    return len_alphabet ** n
 
 # Number of words of length less than or equal to n for given alphabet size
 def get_alphabet_size_all_lengths(n: int, len_alphabet: int) -> int:
-    pass # TODO
-
+    # Closed form sum of above function's values - geometric series
+    if len_alphabet == 1: # Prevent division by zero in special case
+        return n + 1 # e.g. ('', 'a', 'aa', ...)
+    else:
+        return (len_alphabet ** (n + 1) - 1) // (len_alphabet - 1) # Floor div to return int
 
 # Return generator for all words of length exactly n over given alphabet
 def _words_of_length_gen(n: int, alphabet: tuple[str, ...]) -> Generator[str]:
@@ -39,6 +41,7 @@ def _words_of_length_gen(n: int, alphabet: tuple[str, ...]) -> Generator[str]:
                 yield word + letter
 
 # Public wrapper for above
+# if lazy = False, returns all words as tuple in-memory
 def words_of_length(n: int, alphabet: Iterable[str], lazy = True) -> Generator[str] | tuple[str, ...]:
     '''
     - convert alphabet to tuple before generating alphabet
@@ -50,7 +53,8 @@ def words_of_length(n: int, alphabet: Iterable[str], lazy = True) -> Generator[s
     words = _words_of_length_gen(n, tuple(alphabet)) # Generator for words of length n
     return words if lazy else tuple(words)
 
-
+# Generate all words of length less than or equal to n over given alphabet
+# if lazy = False, returns all words as tuple in-memory
 def words_to_length(n: int, alphabet: Iterable[str], lazy = True) -> Generator[str] | tuple[str, ...]:
     '''
     for 0 <= i <= n:
@@ -67,10 +71,8 @@ def words_to_length(n: int, alphabet: Iterable[str], lazy = True) -> Generator[s
                 yield word
     return _gen() if lazy else tuple(_gen())
 
-
-
-
 # Return all words up to given length that match given regular expression
+# TODO make generator
 def words_to_length_from_regex(n: int, alphabet: Iterable[str], regex: str) -> tuple[str, ...]:
     # Convert formal regex to python-regex
     py_regex = regex.replace('.', '') # Remove explicit concat if present
