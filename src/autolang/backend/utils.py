@@ -51,7 +51,7 @@ def _words_of_length_gen(n: int, alphabet: tuple[str, ...]) -> Generator[str]:
 
 # Public wrapper for above
 # if lazy = False, returns all words as tuple in-memory
-def words_of_length(n: int, alphabet: Iterable[str], lazy = True) -> Generator[str] | tuple[str, ...]:
+def words_of_length(n: int, alphabet: Iterable[str], lazy: bool = True) -> Generator[str] | tuple[str, ...]:
     '''
     - convert alphabet to tuple before generating words
     - in particular ensure hashable for lru cache
@@ -68,7 +68,7 @@ def words_of_length(n: int, alphabet: Iterable[str], lazy = True) -> Generator[s
 
 # Generate all words of length less than or equal to n over given alphabet
 # if lazy = False, returns all words as tuple in-memory
-def words_to_length(n: int, alphabet: Iterable[str], lazy = True) -> Generator[str] | tuple[str, ...]:
+def words_to_length(n: int, alphabet: Iterable[str], lazy: bool = True) -> Generator[str] | tuple[str, ...]:
     '''
     for 0 <= i <= n:
         - yield each word of length i
@@ -90,7 +90,7 @@ def words_to_length(n: int, alphabet: Iterable[str], lazy = True) -> Generator[s
 
 # Return all words up to given length that match given regular expression
 # Mainly for development testing, not autolang feature
-def words_to_length_from_regex(n: int, alphabet: Iterable[str], regex: str, lazy = True) -> Generator[str] | tuple[str, ...]:
+def words_to_length_from_regex(n: int, alphabet: Iterable[str], regex: str, lazy: bool = True) -> Generator[str] | tuple[str, ...]:
     # Convert formal regex to python-regex
     py_regex = regex.replace('.', '') # Remove explicit concat if present
     py_regex = py_regex.replace('+', '|') # Union has a different representation in python regex

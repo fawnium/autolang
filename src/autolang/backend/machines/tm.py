@@ -3,7 +3,7 @@ from autolang.backend.machines.structs_config import ConfigTM
 from autolang.backend.machines.structs_transition import TransitionTM
 from autolang.backend.machines.structs_transition import DEFAULT_ACCEPT, DEFAULT_REJECT, DEFAULT_BLANK, DEFAULT_LEFT, DEFAULT_RIGHT
 from autolang.visuals.tm_visuals import _transition_table_tm
-from collections.abc import Iterable
+from collections.abc import Iterable, Generator
 
 # Arbitrary limit to computation steps in case of non-halting with no infinite loops detected
 DEFAULT_MAX_STEPS = int(1e8) # Default 100 million
@@ -95,8 +95,12 @@ class TM:
         else:
             return None # Case where max steps exceeded
         
-    def L(self, n: int = 5) -> tuple[str, ...]:
-        return tuple(word for word in words_to_length(n, self.input_alphabet) if self.accepts(word))
+    # Generate language of TM up to given length
+    # By default, returns tuple up-front, returns generator if lazy = True
+    def L(self, n: int = 5, lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+        # Generator object that produces words accepted by TM
+        gen = (word for word in words_to_length(n, self.input_alphabet) if self.accepts(word))
+        return gen if lazy else tuple(gen)
 
     # VISUALISATION METHODS
 

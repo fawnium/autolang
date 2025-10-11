@@ -2,7 +2,7 @@ from autolang.backend.utils import words_to_length
 from autolang.backend.machines.structs_config import ConfigPDA
 from autolang.backend.machines.structs_transition import TransitionPDA
 from autolang.visuals.pda_visuals import _transition_table_pda
-from collections.abc import Iterable
+from collections.abc import Iterable, Generator
 
 class PDA:
     # NOTE stack is represented as a string *not* a list of chars, and the top is defined as the start (stack[0])
@@ -79,8 +79,12 @@ class PDA:
             queue += list(self.next_configs(current))
         return False
     
-    def L(self, n: int = 5) -> tuple[str, ...]:
-        return tuple(word for word in words_to_length(n, self.input_alphabet) if self.accepts(word))
+    # Generate language of PDA up to given length
+    # By default, returns tuple up-front, returns generator if lazy = True
+    def L(self, n: int = 5, lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+        # Generator object that produces words accepted by PDA
+        gen = (word for word in words_to_length(n, self.input_alphabet) if self.accepts(word))
+        return gen if lazy else tuple(gen)
 
     # VISUALISATION METHODS
 

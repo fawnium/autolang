@@ -2,7 +2,7 @@ from autolang.backend.utils import words_to_length
 from autolang.backend.machines.structs_config import ConfigNFA
 from autolang.backend.machines.structs_transition import TransitionNFA
 from autolang.visuals.nfa_visuals import _transition_table_nfa
-from collections.abc import Iterable
+from collections.abc import Iterable, Generator
 
 class NFA:
 
@@ -73,8 +73,12 @@ class NFA:
                 queue.append(ConfigNFA(next_state, current.suffix, current.path + (state, '')))
         return False
     
-    def L(self, n: int = 5) -> tuple[str, ...]:
-        return tuple(word for word in words_to_length(n, self.alphabet) if self.accepts(word))
+    # Generate language of NFA up to given length
+    # By default, returns tuple up-front, returns generator if lazy = True
+    def L(self, n: int = 5, lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+        # Generator object that produces words accepted by NFA
+        gen = (word for word in words_to_length(n, self.alphabet) if self.accepts(word))
+        return gen if lazy else tuple(gen)
 
     # VISUALISATION METHODS
 

@@ -1,7 +1,7 @@
 from autolang.backend.utils import words_to_length
 from autolang.backend.machines.structs_transition import TransitionDFA
 from autolang.visuals.dfa_visuals import _transition_table_dfa
-from collections.abc import Iterable
+from collections.abc import Iterable, Generator
 
 class DFA:
 
@@ -34,8 +34,11 @@ class DFA:
         return current in self.accept # True if current state is in accept after word has been read
     
     # Generate language of DFA up to given length
-    def L(self, n: int = 5) -> tuple[str, ...]:
-        return tuple(word for word in words_to_length(n, self.alphabet) if self.accepts(word))
+    # By default, returns tuple up-front, returns generator if lazy = True
+    def L(self, n: int = 5, lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+        # Generator object that produces words accepted by DFA
+        gen = (word for word in words_to_length(n, self.alphabet) if self.accepts(word))
+        return gen if lazy else tuple(gen)
 
     # VISUALISATION METHODS
 
