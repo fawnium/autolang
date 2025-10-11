@@ -1,6 +1,6 @@
 # autolang v0.1.0
 
-*README last updated 09/10/2025*
+*README last updated 11/10/2025*
 
 *autolang* is a simple Python project based around finite-state automata, formal languages and grammars, and Turing machines. It is intended for educational use, so that students who are studying the theory within this area may supplement their understanding by creating and running their own real automata to see how they work. 
 
@@ -80,31 +80,38 @@ The following automaton models are currently supported:
 - TM (single tape, deterministic, as in *Sipser*)
 
 Each of the above models supports the following methods:
-- `.accepts(word: str) -> bool` - Takes a string as input, returns  `True` if the given automaton accepts the string, returns `False` otherwise. If the string contains unrecognised letters, `.accepts()` will always return `False`.
+- `.accepts(word: str) -> bool` 
+    - Takes a string as input, returns  `True` if the given automaton accepts the string, returns `False` otherwise. If the string contains unrecognised letters, `.accepts()` will always return `False`.
     - **NOTE:** The Turing machine instance of this method (`TM.accepts()`) can also return `None`. This happens when the word is undecidable, or the TM exceeds a certain number of steps.
 
-- `.L(n: int = 5) -> tuple[str, ...]` - Takes an integer $n$ as input, returns a tuple of all words recognised by the given automaton with length $\leq n$, in len-lex order.
-    - **NOTE:** There are currently no safety measures for handling very large languages. Be careful running this method with a large alphabet size or input length, as it may take a long time to terminate.
+- `.L(n: int = 5, lazy: bool = False) -> tuple[str, ...] | Generator[str]` 
+    - Takes an integer $n$ as input, returns a collection of all words recognised by the given automaton with length $\leq n$, in len-lex order.
+    - if `lazy = False` (default), the collection of words is returned as a tuple immediately.
+    - if `lazy = True`, the collection is instead returned as a generator, and the words are only evaluated when used in a later iteration. This is useful for saving memory for large languages, but is less intuitive for new users.
+    - **WARNING:** Please note that the number of words checked grows exponentially with the length given, and the size of the underlying alphabet. Caution is advised when calling this method with a large integer or an alphabet with more than a handful of letters, as it may take several minutes or hours to terminate.
 
-- `.transition_table()` - Prints the transition table of the given automaton to the terminal.
+- `.transition_table()` 
+    - Prints the transition table of the given automaton to the terminal.
     - **NOTE:** This feature may change in future versions, i.e. by returning a string instead of printing directly.
 
-For guidance on creating specific automata, see [Usage](#usage) below.
+For guidance on creating specific automata, see [Usage](#usage) below, and the `examples/` folder inside the repository.
 
 ### Constructing Automata
 
 In addition to manually creating and simulating automata, *autolang* has a few functions to construct automata using canonical algorithms. These are listed below:
 
-- `regex_to_nfa(regex: str) -> NFA` - Takes a regular expression string as input, returns an NFA that recognises the corresponding regular language.
+- `regex_to_nfa(regex: str) -> NFA` 
+    - Takes a regular expression string as input, returns an NFA that recognises the corresponding regular language.
     - **NOTE:** The union operator *must* be represented as `+`. The Kleene star operator is `*` as usual. No other operators may be included in the input string.
 
-- `nfa_to_dfa(nfa: NFA) -> DFA` - Takes an `NFA` object as input, returns the corresponding DFA, generated via the standard subset construction.
+- `nfa_to_dfa(nfa: NFA) -> DFA` 
+    - Takes an `NFA` object as input, returns the corresponding DFA, generated via the standard subset construction.
     - **NOTE:** The subset construction is *lazy*, so only states that are actually reachable from the start state are included in the final DFA.
     - **NOTE:** No further optimisation/minimisation occurs after the initial construction. This is a planned feature.
 
+See the [Usage](#usage) Section for specific explanations of how to construct automata from regex.
 
-For additional planned features, see the [Roadmap](#roadmap) Section below.
-See the [Usage](#usage) Section for specific explanations of how to use the existing features.
+For additional planned features, see the [Roadmap](#roadmap) Section.
 
 ## Installation
 
