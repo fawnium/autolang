@@ -456,7 +456,7 @@ Below is the general roadmap for the near future of the project. Please be aware
 
 - Transition diagrams for all existing models using `networkx` and `matplotlib`
     - This feature is very close to being in a usable state, and just needs to be integrated with the existing project
-    - There will likely be options both to plot diagrams inline (i.e. for jupyter notebooks), and save them as an imagine for non-graphical/terminal-based environments
+    - There will likely be options both to plot diagrams inline (i.e. for jupyter notebooks), and save them as an image for non-graphical/terminal-based environments
 
 - Option to store formatted transition tables (i.e. as a string), in addition to printing them directly to the terminal
 
