@@ -16,7 +16,7 @@ The project is heavily based on the theory from *Introduction to the Theory of C
 
 v0.1.0 is the initial release, which includes creating and simulating various automaton models, printing transition tables, and constructing automata from regular expressions via canonical methods. See [Features](#features) for more details.
 
-Many more features are planned, as outlined in the [Roadmap](#roadmap)
+Many more features are planned, as outlined in the [Roadmap](#roadmap).
 
 ### Example Use
 
@@ -115,50 +115,105 @@ For additional planned features, see the [Roadmap](#roadmap) Section.
 
 ## Installation
 
-While usability is stated as a priority for *autolang*, please note the installation process is currently a work-in-progress, and is more 'hands-on' then we would like it to eventually be. We recommend using the [Developer](#developer-install) install process below.
+While usability is stated as a priority for *autolang*, please note the installation process is currently a work in progress, and is more 'hands-on' than we would like it to eventually be. 
 
-### Developer Install (Recommended)
+We recommend using the [Developer](#developer-install) install process if you are interested in testing the code or contributing, and using the [User](#user-install) install process if you just want to use *autolang* in your Python projects.
 
-#### Cloning the Repository
+### Developer Install
 
-To create a copy of *autolang* on your computer to work with, do the following:
+Below is a summary of the *autolang* installation process:
+- Ensure `git` is installed on your computer and can be run from your terminal.
+- Navigate to the folder you want to install autolang into.
+- Clone the official GitHub repository. It will be installed as a subfolder within the folder you run the command from.
+- Navigate to the new `autolang/` subfolder.
+- Create a virtual environment if required.
+- Activate the virtual environment, if created. This step is OS-dependent
+- `pip` install *autolang* as a local module, so python knows where to find the source code to import.
 
-- Ensure `git` is installed on your computer and it can be run from your terminal;
-- Navigate to the folder you want to install autolang in;
-- Clone the *autolang* repository to your local folder by running the following terminal command:
-
-```bash
-git clone https://github.com/fawnium/autolang.git
-```
-
-- Then, navigate to the installed folder with this command:
-
-```bash
-cd autolang
-```
-
-#### Running the code
-
-*autolang* is in standard src layout, and can be installed via pip. Once you have set up a virtual environment if required, run the following command:
+After doing steps 1 and 2, complete the installation by running the following commands in order:
 
 ```bash
-pip install -e .
+# Install from GitHub
+git clone https://github.com/fawnium/autolang.git # Clone repository
+cd autolang # Navigate to repository subfolder
+
+# Set up virtual environment (optional)
+python -m venv .venv # Create virtual environment
+# Activate virtual environment (OS-dependent)
+source .venv/bin/activate # Linux/MacOS
+.venv\Scripts\Activate.ps1 # Windows PowerShell
+.venv\Scripts\activate.bat # Windows cmd
+
+# Pip install autolang
+pip install -e . 
 ```
 
-This will tell Python where to find the *autolang* module. After that, you should be able to import as usual:
+Using `pip install -e .` with the `-e` flag means that Python will import autolang from your local instance inside the `src/` folder. Any changes you make to the source code will immediately apply when you import it, without needing to reinstall.
 
-```python
-from autolang import DFA # See examples/ for other features
+After doing the above, you should be able to `import` from autolang in a Python file as usual. See [Usage](#usage) and the `examples/` folder for further guidance.
+
+#### Updating autolang
+
+To ensure you have the most up-to-date version from the GitHub repository, simply run:
+
+```bash
+git pull
 ```
+
+Ensure this command is run when your working directory is the `autolang/` folder.
+
 
 ### User Install
 
-User install is currently a work in progress and has not been tested, but you should be able to install directly from the GitHub repository by running the following terminal command:
+Currently, *autolang* cannot be installed from the official python package repository (yet). However, `pip` can still be used to install autolang directly from the GitHub repository. This is very similar to normal `pip` package installs, but **you must ensure you have `git` installed on your computer first**.
+
+#### Setting up a virtual environment (optional, recommended)
+
+You may want to first set up a virtual environment before installing, to prevent cluttering your general system with *autolang*'s files. You can skip this step if you want to install quickly, or you want *autolang* to be importable anywhere on your computer.
+
+For guidance about virtual environments, see:
+- https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/
+- https://docs.python.org/3/library/venv.html
+
+If you are using Anaconda, it has its own way of managing virtual environments via `conda`. See:
+- https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
+
+The rest of the installation process below is the same regardless of whether you are using Conda.
+
+#### Installing autolang from GitHub
+
+To install autolang in your Python environment, enter the following command in your terminal. 
 
 ```bash
-pip install git+https://github.com/fawnium/autolang
+pip install git+https://github.com/fawnium/autolang.git
 ```
 
+Note that this command will fail if you don't have `git` installed on your computer. Ensure you are using the correct terminal, i.e. the one that corresponds to the environment where you will write your Python code.
+
+
+To check if you have autolang installed and see the version, enter this command:
+
+```bash
+pip show autolang
+```
+
+#### Updating your installation
+
+To update to the latest version of autolang, enter this command:
+
+```bash
+pip install -U git+https://github.com/fawnium/autolang.git
+```
+
+Note the presence of the `-U` flag.
+
+The update command above may fail to install the most up-to-date code, because the GitHub repository is regularly being modified without the version changing. If this command fails to update, use the following command instead:
+
+```bash
+pip install --force-reinstall --no-cache-dir git+https://github.com/fawnium/autolang.git
+```
+
+This will update your installation from GitHub regardless of your current installation. 
 
 ## Usage
 
@@ -301,10 +356,10 @@ We are very grateful to receive any comments or constructive criticism about the
 *autolang*'s tests are implemented using the standard Python `unittest` module, and testing requires no additional dependencies. All test files are located flat inside the `tests/` folder in the parent `autolang/` directory. To run all tests, use the following command while your working directory is the parent directory:
 
 ```bash
-python -m unittest discover
+python -m unittest discover tests
 ```
 
-**NOTE:** Our unit tests are an ongoing work-in-progress, and may not be particularly robust or compehensive. We are currently working on improving test-case coverage.
+**NOTE:** Our unit tests are an ongoing work in progress, and may not be particularly robust or compehensive. We are currently working on improving test-case coverage.
 
 ## Roadmap
 
