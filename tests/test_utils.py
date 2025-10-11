@@ -1,6 +1,22 @@
 import unittest
 from autolang.backend.utils import words_of_length, words_to_length
 
+class TestGetMaxWordsSize(unittest.TestCase):
+    pass
+
+
+class TestGetNumWordsOfLength(unittest.TestCase):
+    pass
+
+
+class TestGetNumWordsToLength(unittest.TestCase):
+    pass
+
+
+class TestWordsMemorySafeguard(unittest.TestCase):
+    pass
+
+
 class TestWordsOfLength(unittest.TestCase):
 
     def test_length_zero(self):
