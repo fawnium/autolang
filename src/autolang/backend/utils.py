@@ -90,9 +90,16 @@ def words_to_length(n: int, alphabet: Iterable[str], lazy = True) -> Generator[s
     return _gen() if lazy else tuple(_gen())
 
 # Return all words up to given length that match given regular expression
-# TODO make generator
-def words_to_length_from_regex(n: int, alphabet: Iterable[str], regex: str) -> tuple[str, ...]:
+# Mainly for development testing, not autolang feature
+def words_to_length_from_regex(n: int, alphabet: Iterable[str], regex: str, lazy = True) -> Generator[str] | tuple[str, ...]:
     # Convert formal regex to python-regex
     py_regex = regex.replace('.', '') # Remove explicit concat if present
     py_regex = py_regex.replace('+', '|') # Union has a different representation in python regex
-    return tuple(word for word in words_to_length(n, alphabet, lazy = True) if re.fullmatch(py_regex, word))
+
+    # Generator for words matching regex
+    def _gen():
+        for word in words_to_length(n, alphabet, lazy = True):
+            if re.fullmatch(py_regex, word):
+                yield word
+
+    return _gen() if lazy else tuple(_gen())
