@@ -230,7 +230,7 @@ DFA(transition: dict[tuple[str, str], str], start: str, accept: Iterable[str])
 ```
 
 - `transition: dict` is a dict representing the transition function of the DFA.
-    - Each entry is of the form `(state, letter): next state`, and encodes a single transition. All are strings, and `letter` should be a single character.
+    - Each entry is of the form `(state, letter): next_state`, and encodes a single transition. All are strings, and `letter` should be a single character.
     - For example if you want the DFA to transition from `q0` to `q1` when reading the letter `a`, include this entry in the dict: `('q0', 'a'): 'q1'`
     - You must ensure you include a transition for every possible state-letter pair, since DFAs are deterministic. If you miss one, an error will be raised.
 - `start: str` is the start state of the DFA. Its transitions must be included in the `transition` dict.
@@ -265,6 +265,8 @@ dfa.transition_table() # Prints to terminal
 Below is an example of creating a specific DFA. This is the DFA $M_1$ in Sipser, p36.
 
 ```python
+from autolang import DFA
+
 # Create the transition function dictionary
 tran1 = {
     ('q1', '0'): 'q1',
@@ -290,11 +292,74 @@ M1.transition_table()
 
 ### Creating an NFA
 
-Creating an NFA is similar to a DFA with some nuances. The constructor is `NFA(transition: dict[tuple[str, str], tuple[str, ...]], start: str, accept: Iterable[str])`. Almost everything is the same as the DFA case, except now the values in the transition dictionary must be *tuples* of strings and not a single string, due to nondeterminism. This applies regardless of whether the NFA has zero, one, or many allowed transitions from a given state. If you want the NFA to transition from `q0` to `q1` when reading `a`, include `('q0', 'a'): ('q1',)` in the dictionary. Note that the next state `q1` must be wrapped inside a tuple, and ensure that a comma is inserted so it is recognised as such. If you want the NFA to be able to transition to both `q1` *and* `q2` when in state `q0` and reading `a`, then include `('q0', 'a'): ('q1', 'q2')` in the dictionary. If you want the NFA to have *no* transitions from `q0` when reading `a`, you can simply omit the entry from the dictionary (which is allowed here *unlike* the DFA case), or if you really want you can include the entry `('q0', 'a'): tuple()` which signals an empty tuple of next states. 
+An NFA is created using this constructor:
 
-Epsilon transitions are simply encoded as the empty string `''` instead of a letter. For example, an epsilon transition from `q0` to `q1` will look like `('q0', ''): ('q1',)` in the dictionary.
+```python
+NFA(transition: dict[tuple[str, str], tuple[str, ...]], start: str, accept: Iterable[str])
+```
 
-For specific NFA constructions see `examples/nfa_examples.py`.
+- `transition: dict` is a dict representing the transition function of the NFA.
+    - Each entry is of the form `(state, letter): (next_state1, next_state2, ...)`, and encodes *all transitions* from a specific state for a specific letter. Note this differs from the DFA case, and the entry's value must be a *tuple* of strings.
+    - If there is only one available transition, **this must still be wrapped in a tuple**, e.g. `('q1',)` and **not** `'q1'` or `('q1')`.
+    - For example if you want the NFA to transition from `q0` to `q1` when reading `a`, then include `('q0', 'a'): ('q1',)` in the dict.
+    - If you want the NFA to transition to both `q1` or `q2` from the same place, then include `('q0', 'a'): ('q1', 'q2')`.
+    - You can omit entries for specific state-letter pairs (unlike with DFAs), and should do so if you want no allowed transitions.
+        - If you want to include all possible transition keys for some reason, you can include `('q0', 'a'): tuple()` to indicate an empty set of allowed transitions.
+    - ε-transitions are simply encoded using the empty string `''` instead of a letter. For example, an ε-transition from `q0` to `q1` will be `('q0', ''): ('q1',)` in the dict.
+- `start: str` is the start state of the NFA. If you don't include any transitions from it in `transition`, the NFA will simply get stuck in the start state.
+- `accept: Iterable[str]` is collection of the NFA accept states. 
+    - This can be given as a `list`, `set`, or any other valid iterable object.
+- The alphabet and total list of states are automatically inferred from the transition function.
+- The same restrictions on naming states and letters apply here as they do for DFAs.
+
+To see if an NFA accepts a specific word, use the `.accepts()` method:
+
+```python
+is_in_language = nfa.accepts('ab') # True or False
+```
+
+To get the whole language of an NFA, up to a certain length, use the `.L()` method:
+
+```python
+language_of_nfa = nfa.L(4) # Tuple of all accepted words up to length 4, in len-lex order
+```
+
+> [!WARNING]
+> Be careful using this method with a large length value, as it will take exponential time to compute.
+
+To print the transition table of an NFA for a nice visual, use the `.transition_table()` method:
+
+```python
+dfa.transition_table() # Prints to terminal
+```
+
+Below is an example of creating a specific NFA. This is the NFA $N_1$ in Sipser, p48.
+
+```python
+from autolang import NFA
+
+# Create transition function dict
+tran1 = {
+    ('q1', '0'): ('q1',),
+    ('q1', '1'): ('q1', 'q2'), 
+    ('q2', ''): ('q3',),
+    ('q2', '0'): ('q3',),
+    ('q3', '1'): ('q4',),
+    ('q4', '0'): ('q4',),
+    ('q4', '1'): ('q4',) 
+}
+# Create NFA itself
+N1 = NFA(tran1, 'q1', ['q4'])
+
+# Check specific words
+N1.accepts('010') # False
+
+# Generate the language up to length 3
+N1.L(3) # Returns tuple
+
+# Print transition table
+N1.transition_table()
+```
 
 ### Creating a PDA
 
