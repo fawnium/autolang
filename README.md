@@ -217,25 +217,54 @@ This will update your installation from GitHub regardless of your current instal
 
 ## Usage
 
-This section only describes how to use features once they have been imported. For the correct way to import specific classes and functions, see the [Installation](#installation) Section.
+This section describes how to import and use features once *autolang* has been installed. For installation guidance, see the [Installation](#installation) Section.
 
 Example use cases of all the main *autolang* features are provided in the corresponding files in the `examples/` folder. Please refer to these if you are unsure how to use the features.
 
 ### Creating a DFA
 
-Here we detail how to create and use the DFA $M1$ in Sipser p36, which recognises the language 
+A DFA is created using this constructor:
 
-$$\{w \in \{0, 1\}^* \mid w \text{ contains at least one `1' and the final `1' is followed by an even number of `0's}\}$$
+```python
+DFA(transition: dict[tuple[str, str], str], start: str, accept: Iterable[str])
+```
 
- Creating other types of automata is similar, but they differ in how specifically to encode the transition function, and other intrinsic differences between the models. See the files in `examples/` for more details. 
+- `transition: dict` is a dict representing the transition function of the DFA.
+    - Each entry is of the form `(state, letter): next state`, and encodes a single transition. All are strings, and `letter` should be a single character.
+    - For example if you want the DFA to transition from `q0` to `q1` when reading the letter `a`, include this entry in the dict: `('q0', 'a'): 'q1'`
+    - You must ensure you include a transition for every possible state-letter pair, since DFAs are deterministic. If you miss one, an error will be raised.
+- `start: str` is the start state of the DFA. Its transitions must be included in the `transition` dict.
+- `accept: Iterable[str]` is collection of the DFA accept states. Transitions for all accept states must be included in the `transition` dict.
+    - This can be given as a `list`, `set`, or any other valid iterable object.
+- You do not need to provide the alphabet or total list of states for the DFA. These are automatically inferred from the transition function.
+- State names and alphabet letters are *case sensitive*, so ensure all strings are correct.
+- States can be given any name, not just `q0, q1, ...`. Certain characters are forbidden from appearing in state names, such as `'+'` or `'_'`, but the number is relatively small. You can stick to letters and numbers to be safe.
+- Letters must be single characters, but likewise can be any character other than the small number of forbidden characters.
 
-A DFA is created by using the constructor `DFA(transition: dict[tuple[str, str], str], start: str, accept: Iterable[str])`. It needs three arguments: the `transition` function; the `start` state; and the `accept` states, which can be given as a `list`, `set` or any other `Iterable` container. You do not need to pass the alphabet or set of states to construct the DFA - these are automatically inferred from the transition function.
+To see if a DFA accepts a specific word, use the `.accepts()` method:
 
-The transition function is a dictionary which must be encoded in a specific way. Each key in the dictionary is a pair `(state, letter)` where `state` and `letter` are strings, and the corresponding value is a string `next_state`. Each key-value pair in the dictionary corresponds to a transition in the transition function. For example, if you want the DFA to transition from `q0` to `q1` when reading the letter `a`, include `('q0', 'a'): 'q1'` in the dictionary. You must ensure that you include transitions for every possible letter from every possible states, otherwise an error will be raised. You must also ensure that the additional arguments `start` and `accept` only include valid states that appear in the transition function. Take care to check all strings as they are case-sensitive. Note than some characters are forbidden from appearing in state names, such as `'+'` or `'_'`. To be safe, you can restrict names to numbers and upper- and lower-case Latin letters.
+```python
+is_in_language = dfa.accepts('ab') # True or False
+```
 
-Below is how to create the DFA $M1$ in Sipser, p36. It is worth checking the transition diagram in the textbook to see the correspondence:
+To get the whole language of a DFA, up to a certain length, use the `.L()` method:
 
-```Python
+```python
+language_of_dfa = dfa.L(4) # Tuple of all accepted words up to length 4, in len-lex order
+```
+
+> [!WARNING]
+> Be careful using this method with a large length value, as it will take exponential time to compute.
+
+To print the transition table of a DFA for a nice visual, use the `.transition_table()` method:
+
+```python
+dfa.transition_table() # Prints to terminal
+```
+
+Below is an example of creating a specific DFA. This is the DFA $M_1$ in Sipser, p36.
+
+```python
 # Create the transition function dictionary
 tran1 = {
     ('q1', '0'): 'q1',
@@ -247,26 +276,17 @@ tran1 = {
 }
 # Create the DFA itself
 M1 = DFA(tran1, 'q1', ['q2']) # The name 'M1' is arbitrary, and any valid variable name can be used
-```
 
-Now that `M1` has been created, you can give it words to compute or generate its language:
-
-```Python
-
+# Check specific words
 M1.accepts('000') # Will return `False`
 M1.accepts('100') # Will return `True`
 
-# Generate the language of M_1 up to length 3
+# Generate the language of M1 up to length 3
 M1.L(3) # Will return `('1', '01', '11', '001', '011', '100', '101', '111')`
+
+# Print M1's transition table
+M1.transition_table()
 ```
-
-You can also print the DFA's transition table for better readability compared to the input dict:
-
-```python
-M1.transition_table() # Prints to the terminal when run
-```
-
-For further specific DFA constructions see `examples/dfa_examples.py`.
 
 ### Creating an NFA
 
