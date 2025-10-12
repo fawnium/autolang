@@ -221,6 +221,8 @@ This section describes how to import and use features once *autolang* has been i
 
 Example use cases of all the main *autolang* features are provided in the corresponding files in the `examples/` folder. Please refer to these if you are unsure how to use the features.
 
+In general, automata are created using a specially-formatted dictionary which represents their transition function. They also require additional metadata, such as the start and accept states, which varies slightly by model. Making automaton creation easier is a planned feature.
+
 ### Creating a DFA
 
 A DFA is created using this constructor:
@@ -330,7 +332,7 @@ language_of_nfa = nfa.L(4) # Tuple of all accepted words up to length 4, in len-
 To print the transition table of an NFA for a nice visual, use the `.transition_table()` method:
 
 ```python
-dfa.transition_table() # Prints to terminal
+nfa.transition_table() # Prints to terminal
 ```
 
 Below is an example of creating a specific NFA. This is the NFA $N_1$ in Sipser, p48.
@@ -363,13 +365,74 @@ N1.transition_table()
 
 ### Creating a PDA
 
-The constructor for creating a PDA is `PDA(transition: dict[tuple[str, str, str], tuple[tuple[str, str], ...]], start: str, accept: Iterable[str])`. The `start` and `accept` arguments are exactly the same as above. 
+A PDA is created with this constructor:
 
-Now the transition dictionary keys have length $3$ instead of $2$. The order of the key tuple is `state`, `letter`, `stack_top`. The dictionary values are tuples of zero or more transitions, just like with NFAs, except now the entries in the tuples are *themselves* tuples of length $2$, and not strings. Each 2-tuple inside a parent tuple is of the form `(next_state, stack_push)`. 
+```python
+PDA(transition: dict[tuple[str, str, str], tuple[tuple[str, str], ...]], start: str, accept: Iterable[str])
+```
 
-As an example, suppose you want the PDA have *two* transitions from `q0` when reading `a` in the input word and reading `$` from the stack. The first transition goes to `q1` and pushes `x` to the stack, and the second goes to `q2` and pushes nothing to the stack. The correct dictionary entry to encode this is `('q0', 'a', '$'): (('q1', 'x'), ('q2', ''))`. You must be careful when formatting nested tuples like this, and ensure there is still a comma inside the parent tuple even if there is only one transition, as with the NFA case.
+- `transition: dict` is a dict representing the the PDA transition function.
+    - Each entry entry is of the form `(state, letter, stack_top): ((next_state1, stack_push1), (next_state2, stack_push2), ...)`.
+    - Each entry encodes all possible transitions (and the corresponding letter pushed to the stack) from a given state, for a given read `letter`, for a given letter read from the stack (`stack_top`)
+    - The entry's value **must be wrapped in a tuple**, even if there is only one transition, and each inner tuple must have length 2.
+        - If there is only one transition, a comma must still be included after it, inside the parent tuple.
+    - As with NFAs, ε-transitions are encoded using the empty string `''`. This applies to both the input letters and the stack.
+    - For example, say you want the PDA to have two transitions from `q0` when reading `a` in the input word and reading `$` from the stack: one goes to `q1` and pushes `x` to the stack, and the other goes to `q2` and pushes nothing to the stack. The `transition` entry to encode this is `('q0', 'a', '$'): (('q1', 'x'), ('q2', ''))`
+        - **NOTE**: reading a letter from the stack automatically means it gets popped from the stack. If no letter is read, nothing is popped.
+    - If you want the PDA to transition without reading the stack, use `''` for `stack_push`, e.g. `('q0', 'a', ''): (('q1', '$'),)`. This will *not* pop the top of the stack.
+    - If you want no transitions for a specific state-letter-stack_top triple, then you can omit this entry from the dict, *or* include it with an empty tuple as its value, e.g. `('q0', 'a', '$'): tuple()`.
+- `start: str` is the start state of the PDA. If you don't include any transitions from it in `transition`, the NFA will simply get stuck in the start state.
+- `accept: Iterable[str]` is collection of the PDA accept states. 
+    - This can be given as a `list`, `set`, or any other valid iterable object.
+- The alphabets (input and stack) and total list of states are automatically inferred from the transition function.
+- The same restrictions on naming states and letters apply here as they do for DFAs and NFAs.
 
-For specific PDA constructions see `examples/pda_examples.py`.
+To see if a PDA accepts a specific word, use the `.accepts()` method:
+
+```python
+is_in_language = pda.accepts('ab') # True or False
+```
+
+To get the whole language of a PDA, up to a certain length, use the `.L()` method:
+
+```python
+language_of_pda = pda.L(4) # Tuple of all accepted words up to length 4, in len-lex order
+```
+
+> [!WARNING]
+> Be careful using this method with a large length value, as it will take exponential time to compute.
+
+To print the transition table of a PDA for a nice visual, use the `.transition_table()` method:
+
+```python
+pda.transition_table() # Prints to terminal
+```
+
+Below is an example of creating a specific PDA. This is PDA $M_1$ in Sipser, p114.
+
+```python
+from autolang import PDA
+# Create transition function dict
+tran1 = {
+    ('q1', '', ''): (('q2', '$'),),
+    ('q2', '0', ''): (('q2', '0'),),
+    ('q2', '1', '0'): (('q3', ''),),
+    ('q3', '1', '0'): (('q3', ''),),
+    ('q3', '', '$'): (('q4', ''),)
+}
+# Create PDA itself
+M1 = PDA(tran1, 'q1', ['q1', 'q4'])
+
+# Check specific words
+M1.accepts('0011') # True
+M1.accepts('010') # False
+
+# Generate the language up to length 3
+M1.L(8) # Returns ('', '01', '0011', '000111', '00001111')
+
+# Print transition table
+M1.transition_table()
+```
 
 ### Creating a TM
 
