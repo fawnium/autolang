@@ -316,7 +316,7 @@ NFA(transition: dict[tuple[str, str], tuple[str, ...]],
 - `accept: Iterable[str]` is collection of the NFA accept states. 
     - This can be given as a `list`, `set`, or any other valid iterable object.
 - The alphabet and total list of states are automatically inferred from the `transition` function.
-- The same restrictions on naming states and letters apply here as they do for DFAs.
+- The same restrictions on naming states and letters apply here as they do for [DFAs](#creating-a-dfa).
 
 To see if an NFA accepts a specific word, use the `.accepts()` method:
 
@@ -382,7 +382,7 @@ PDA(transition: dict[tuple[str, str, str], tuple[tuple[str, str], ...]],
     - Each entry encodes all possible transitions (and the corresponding letter pushed to the stack) from a given state, for a given read `letter`, for a given letter read from the stack (`stack_top`)
     - The entry's value **must be wrapped in a tuple**, even if there is only one transition, and each inner tuple must have length 2.
         - If there is only one transition, a comma must still be included after it, inside the parent tuple.
-    - As with NFAs, ε-transitions are encoded using the empty string `''`. This applies to both the input letters and the stack.
+    - As with [NFAs](#creating-an-nfa), ε-transitions are encoded using the empty string `''`. This applies to both the input letters and the stack.
     - For example, say you want the PDA to have two transitions from `q0` when reading `a` in the input word and reading `$` from the stack: one goes to `q1` and pushes `x` to the stack, and the other goes to `q2` and pushes nothing to the stack. The `transition` entry to encode this is `('q0', 'a', '$'): (('q1', 'x'), ('q2', ''))`
         - **NOTE**: reading a letter from the stack automatically means it gets popped from the stack. If no letter is read, nothing is popped.
     - If you want the PDA to transition without reading the stack, use `''` for `stack_push`, e.g. `('q0', 'a', ''): (('q1', '$'),)`. This will *not* pop the top of the stack.
