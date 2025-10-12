@@ -245,7 +245,8 @@ Example use cases of all the main *autolang* features are provided in the corres
 
 In general, automata are created using a specially-formatted dictionary which represents their transition function. They also require additional metadata, such as the start and accept states, which varies slightly by model. Making automaton creation easier is a planned feature.
 
-### Creating a DFA
+<details>
+<summary><h3 id="creating-a-dfa">Creating a DFA</h3></summary>
 
 A DFA is created using this constructor:
 
@@ -315,8 +316,10 @@ M1.L(3) # Will return `('1', '01', '11', '001', '011', '100', '101', '111')`
 # Print M1's transition table
 M1.transition_table()
 ```
+</details>
 
-### Creating an NFA
+<details>
+<summary><h3 id="creating-an-nfa">Creating an NFA</h3></summary>
 
 An NFA is created using this constructor:
 
@@ -388,8 +391,10 @@ N1.L(3) # Returns tuple
 # Print transition table
 N1.transition_table()
 ```
+</details>
 
-### Creating a PDA
+<details>
+<summary><h3 id="creating-a-pda">Creating a PDA</h3></summary>
 
 A PDA is created with this constructor:
 
@@ -461,8 +466,10 @@ M1.L(8) # Returns ('', '01', '0011', '000111', '00001111')
 # Print transition table
 M1.transition_table()
 ```
+</details>
 
-### Creating a Turing Machine
+<details>
+<summary><h3 id="creating-a-turing-machine">Creating a Turing Machine</h3></summary>
 
 A Turing machine (TM) is created with this constructor:
 
@@ -556,8 +563,10 @@ M1.L(10) # Returns ('0', '00', '0000', '00000000')
 # Print transition table
 M1.transition_table()
 ```
+</details>
 
-### Creating NFAs/DFAs from Regex
+<details>
+<summary><h3 id="creating-nfas-dfas-from-regex">Creating NFAs/DFAs from Regex</h3></summary>
 
 Note that 'regex' in this context refers to *formal* regular expressions, which only support unions (`+`) and Kleene stars (`*`).
 
@@ -576,6 +585,7 @@ dfa = nfa_to_dfa(regex_to_nfa(R))
 ```
 
 Note you can also create a DFA *any* existing NFA, not just one that was created from a regex.
+</details>
 
 </details>
 
