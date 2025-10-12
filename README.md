@@ -82,7 +82,8 @@ This project is intended for educational use while studying automata theory, for
 While these aims are nowhere near fully-realised in v0.1.0, we expect the project to attain both enhanced features and much better usability in the coming weeks and months. These aims are discussed in more detail under [Design Philosophy](#design-philosophy) below.
 </details>
 
-## Features
+<details>
+<summary><h2 id="features">Features</h2></summary>
 
 For specific uses of the features below, see the [Usage](#usage) Section.
 
@@ -128,7 +129,10 @@ See the [Usage](#usage) Section for specific explanations of how to construct au
 
 For additional planned features, see the [Roadmap](#roadmap) Section.
 
-## Installation
+</details>
+
+<details>
+<summary><h2 id="installation">Installation</h2></summary>
 
 While usability is stated as a priority for *autolang*, please note the installation process is currently a work in progress, and is more 'hands-on' than we would like it to eventually be. 
 
@@ -228,9 +232,12 @@ The update command above may fail to install the most up-to-date code, because t
 pip install --force-reinstall --no-cache-dir git+https://github.com/fawnium/autolang.git
 ```
 
-This will update your installation from GitHub regardless of your current installation. 
+This will update your installation from GitHub regardless of your current installation.
 
-## Usage
+</details>
+
+<details>
+<summary><h2 id="Usage">Usage</h2></summary>
 
 This section describes how to import and use features once *autolang* has been installed. For installation guidance, see the [Installation](#installation) Section.
 
@@ -570,8 +577,10 @@ dfa = nfa_to_dfa(regex_to_nfa(R))
 
 Note you can also create a DFA *any* existing NFA, not just one that was created from a regex.
 
+</details>
 
-## Design Philosophy
+<details>
+<summary><h2 id="design-philosophy">Design Philosophy</h2></summary>
 
 Below we discuss the overall aims of the project in more detail.
 
@@ -592,23 +601,34 @@ Tactile intuition firstly covers the idea of *interactability*, which is always 
 
 Tactile intuition is also meant to cover a *visual* aspect to learning the theory, but it felt somewhat dishonest to say this earlier when the main visualisation features have not yet been developed for *autolang*. We plan in future versions to implement a far more interactive graphical way to investigate automata, such as showing step-by-step animations of a machine transitioning between states. We do have a feature for plotting static transition diagrams, but these are not optimised and may produce intractable or 'ugly' visuals for complex unseen automata. Transition diagrams are often thought to be a very intuitive way of understanding the machines, despite being less precise than formal descriptions, and the diagrams that appear in textbooks and teaching materials are of course curated to have a nice clean layout for this purpose. However, these are inherently limited to which specific machines the authors decided to include at the time of publication. We envision the benefit of *autolang*'s visuals to be their *versatility*, i.e. visuals can be generated for an arbitrary machine that the user decides to create, even if their layout may be suboptimal. For more information on planned features, see the [Roadmap](#roadmap) Section. 
 
+</details>
 
+<details>
+<summary><h2 id="documentation">Documentation</h2></summary>
 
-## Documentation
 This README file serves as the current documentation of autolang. Unfortunately a more comprehensive official documentation does not exist, yet...
 
+</details>
 
-## Contributing
+<details>
+<summary><h2 id="contributing">Contributing</h2></summary>
+
 Due to how early in development *autolang* is, we are currently **not** looking for any additional contributors, until the project is more robust and its scope has been better defined. You are of course free to fork the project or use any of its constituent code however you wish.
 
-### Issues
+</details>
+
+<details>
+<summary><h2 id="issues">Issues</h2></summary>
 
 *autolang* is a single-person project that is early in development, and therefore there are likely numerous bugs and issues in the current version. If you discover a bug, you are both very welcome and encouraged to notify us about it. You should do this either by raising the issue on the official GitHub repository (https://github.com/fawnium/autolang), or by sending an email directly to the contact address(es) listed in the repository. If you do wish to report an issue, please be as detailed and specific as you can be in your explanation, and if possible, include a minimal code which reproduces the issue.
 
 We are very grateful to receive any comments or constructive criticism about the project!
 
+</details>
 
-## Testing
+<details>
+<summary><h2 id="testing">Testing</h2></summary>
+
 *autolang*'s tests are implemented using the standard Python `unittest` module, and testing requires no additional dependencies. All test files are located flat inside the `tests/` folder in the parent `autolang/` directory. To run all tests, use the following command while your working directory is the parent directory:
 
 ```bash
@@ -617,7 +637,10 @@ python -m unittest discover tests
 
 **NOTE:** Our unit tests are an ongoing work in progress, and may not be particularly robust or compehensive. We are currently working on improving test-case coverage.
 
-## Roadmap
+</details>
+
+<details>
+<summary><h2 id="roadmap">Roadmap</h2></summary>
 
 While *autolang* is very early in development, we are excited that it is being actively and rapidly developed. We plan to expand the scope both by implementing more of the canonical algorithms from the theory in Sipser, and enhancing usability by including visualisations and a more comprehensive UI/UX.
 
@@ -667,13 +690,22 @@ Below is the general roadmap for the near future of the project. Please be aware
 - Implement macros which allow running minimal high-level code directly on a Turing machine
     - This is intended as an illustrative/tactile proof-of-concept of the universality of Turing machines
 
+</details>
 
-## License
+<details>
+<summary><h2 id="license">License</h2></summary>
+
 *autolang* has a standard MIT license, and is completely open-source and free to use by anyone for any reason. This project is a single-person hobby project with no commercial parties involved. If the project's status changes in the future, these changes will be broadcast via the official GitHub repository, and other channels if applicable at the time. There are currently **no** plans to change the intellectual property status of *autolang*.
 
-## Credits and Acknowledgements
+</details>
+
+<details>
+<summary><h2 id="credits-and-acknowledgements">Credits and Acknowledgements</h2></summary>
+
 At the time of writing the only contributor to *autolang* is Lyons / 'fawnium'.
 
 Many thanks are extended to Prof Roney-Dougal and Dr Huczynska at the University of St Andrews, who ran a course on automata theory that inspired and motivated this project to be developed.
 
 Thanks are also extended to Michael Sipser *et al* for writing *Introduction to the Theory of Computation*, a textbook that was invaluable for providing the necessary theory to develop the project.
+
+</details>
