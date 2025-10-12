@@ -228,7 +228,9 @@ In general, automata are created using a specially-formatted dictionary which re
 A DFA is created using this constructor:
 
 ```python
-DFA(transition: dict[tuple[str, str], str], start: str, accept: Iterable[str])
+DFA(transition: dict[tuple[str, str], str], 
+    start: str, 
+    accept: Iterable[str])
 ```
 
 - `transition: dict` is a dict representing the transition function of the DFA.
@@ -238,7 +240,7 @@ DFA(transition: dict[tuple[str, str], str], start: str, accept: Iterable[str])
 - `start: str` is the start state of the DFA. Its transitions must be included in the `transition` dict.
 - `accept: Iterable[str]` is collection of the DFA accept states. Transitions for all accept states must be included in the `transition` dict.
     - This can be given as a `list`, `set`, or any other valid iterable object.
-- You do not need to provide the alphabet or total list of states for the DFA. These are automatically inferred from the transition function.
+- You do not need to provide the alphabet or total list of states for the DFA. These are automatically inferred from the `transition` function.
 - State names and alphabet letters are *case sensitive*, so ensure all strings are correct.
 - States can be given any name, not just `q0, q1, ...`. Certain characters are forbidden from appearing in state names, such as `'+'` or `'_'`, but the number is relatively small. You can stick to letters and numbers to be safe.
 - Letters must be single characters, but likewise can be any character other than the small number of forbidden characters.
@@ -297,7 +299,9 @@ M1.transition_table()
 An NFA is created using this constructor:
 
 ```python
-NFA(transition: dict[tuple[str, str], tuple[str, ...]], start: str, accept: Iterable[str])
+NFA(transition: dict[tuple[str, str], tuple[str, ...]], 
+    start: str, 
+    accept: Iterable[str])
 ```
 
 - `transition: dict` is a dict representing the transition function of the NFA.
@@ -311,7 +315,7 @@ NFA(transition: dict[tuple[str, str], tuple[str, ...]], start: str, accept: Iter
 - `start: str` is the start state of the NFA. If you don't include any transitions from it in `transition`, the NFA will simply get stuck in the start state.
 - `accept: Iterable[str]` is collection of the NFA accept states. 
     - This can be given as a `list`, `set`, or any other valid iterable object.
-- The alphabet and total list of states are automatically inferred from the transition function.
+- The alphabet and total list of states are automatically inferred from the `transition` function.
 - The same restrictions on naming states and letters apply here as they do for DFAs.
 
 To see if an NFA accepts a specific word, use the `.accepts()` method:
@@ -368,7 +372,9 @@ N1.transition_table()
 A PDA is created with this constructor:
 
 ```python
-PDA(transition: dict[tuple[str, str, str], tuple[tuple[str, str], ...]], start: str, accept: Iterable[str])
+PDA(transition: dict[tuple[str, str, str], tuple[tuple[str, str], ...]], 
+    start: str, 
+    accept: Iterable[str])
 ```
 
 - `transition: dict` is a dict representing the the PDA transition function.
@@ -384,7 +390,7 @@ PDA(transition: dict[tuple[str, str, str], tuple[tuple[str, str], ...]], start: 
 - `start: str` is the start state of the PDA. If you don't include any transitions from it in `transition`, the NFA will simply get stuck in the start state.
 - `accept: Iterable[str]` is collection of the PDA accept states. 
     - This can be given as a `list`, `set`, or any other valid iterable object.
-- The alphabets (input and stack) and total list of states are automatically inferred from the transition function.
+- The alphabets (input and stack) and total list of states are automatically inferred from the `transition` function.
 - The same restrictions on naming states and letters apply here as they do for DFAs and NFAs.
 
 To see if a PDA accepts a specific word, use the `.accepts()` method:
@@ -434,33 +440,120 @@ M1.L(8) # Returns ('', '01', '0011', '000111', '00001111')
 M1.transition_table()
 ```
 
-### Creating a TM
+### Creating a Turing Machine
 
-TMs are the most complex and unique of the models supported in *autolang*, and hence are the most distinct in their construction, but they are still fairly similar. The constructor is `TM(transition: dict[tuple[str, str], tuple[str, str, str]], start: str, accept: str, reject: str, reserved_letters = set()))`.
+A Turing machine (TM) is created with this constructor:
 
-The `start` argument is the same as above. For TMs there is no longer a list of accept states. Instead, there is a single unique `accept` state and a single unique `reject` state, and these have the default values `qa` and `qr` respectively. You may use these names for working states instead, provided you also provide distinct alternatives for the accept and reject states. The `reserved_letters` argument is for stipulating letters which are strictly reserved for the tape alphabet, and should *not* be included in the input alphabet. Unfortunately there is no way to automatically distinguish between which letters should and should not be allowed in the input. Note that the special blank letter is represented as an underscore `'_'`. This character can *never* be used in the input alphabet, and does not need to be included with the other reserved letters.
+```python
+TM(transition: dict[tuple[str, str], tuple[str, str, str]], 
+   start: str, 
+   accept: str, 
+   reject: str, 
+   reserved_letters: Iterable[str] = set())
+```
 
-The TM `transition` dictionary entries must all have the form `(state, letter): (next_state, write, direction)`, where all are strings. `state` is the current state, `letter` is the letter in the current cell, `next_state` is the state to transition to, `write` is the letter to write to the current cell, and `direction` *must* either be `'L'` or `'R'`. Recall that DFAs are deterministic and must have a defined transition for every possible state-letter pair. TMs are also deterministic, but we made the decision to allow missing transitions here because many practical examples of TMs display this when a transition could never theoretically be reached for any input. This is of course risky, because you the user may forget necessary transitions, and there is no way to distinguish between mistakes and transitions that were intended to be omitted. It is likely that a future version of *autolang* will automatically add missing transitions, which will default to the reject state.
+- `transition: dict` is a dict representing the TM transition function.
+    - Each entry encodes a single transition. This includes the next state, letter written to current cell, and move direction. Note the `write` letter is written *before* moving to the next cell.
+    - Each entry is of the form `(state, letter): (next_state, write, direction)`. The `direction` *must* be either an uppercase `'L'` or uppercase `'R'`.
+    - For example, if you want the TM to transition to state `q1`, write `x` to the current cell, and move right, when in state `q0` and reading `a`, include this entry in the dict: `('q0', 'a'): ('q1', 'x', 'R')`.
+    - The special blank-cell letter is the underscore `'_'`, and this cannot be changed.
+        - For example if you want the TM to erase its current cell before moving, include `('q0', 'a'): ('q1', '_', 'R')`
+    - Note that you *can* omit transitions from a TM transition function, even though they are deterministic. If you do, these transitions will automatically default to the `reject` state. This may lead to unintended behaviour if you forget to add transitions.
+        - This choice was made to make creating TMs less tedious, although it does make it easier for mistakes to happen during creation since an error is not raised. We decided defaulting to the reject state was a reasonable compromise in this situation. 
+        - Additionally, there are many cases where a specific transition can't actually be reached from any starting configuration, so including it is pointless.
+    - If there are *no* transitions to the `accept` state, the TM can still be created, but you will be prompted to continue with the creation, since such a TM will have an empty language.
+        - We decided that it should be allowed to create TMs that cannot accept any words for research or investigations. Indeed, for many TMs it doesn't actually matter what they accept, but rather solely what they produce on their tape.
+    - Since the TM will immediately halt when it enters the `accept` or `reject` state, you should not include any transitions *from* these states.
+- `start: str` is the start state of the TM.
+- `accept: str` is the unique accept state of the TM. The default is `'qa'`.
+- `reject: str` is the unique reject state of the TM. The default is `'qr'`.
+    - **NOTE**: you can use the names `'qa'` and `'qr'` for working states instead, provided you also provide distinct alternatives for the halting states. Sticking with the defaults is recommended.
+- `reserved_letters: Iterable[str]` is a list of letters which are intended strictly for use on the tape, and should not be allowed in input words. There is no way to distinguish between the input alphabet and the tape alphabet without you manually stipulating it.
+    - The blank letter `'_'` is *always* reserved, and doesn't need to be included in this arg.
+- The alphabets (input and tape) and total list of states are automatically inferred from the `transition` function, and `reserved_letters`.
+- You cannot use `'_'` as an input letter, since it will just be interpereted as blank. Any other character should be a valid letter for TMs.
 
-**NOTE:** You *are* able to create TMs with no transitions to the accept state, even though machines will have an empty language. If you do so, you will be prompted to proceed, in case this omission was a mistake.
+To see if a TM accepts a specific word, use the `.accepts()` method:
 
-For specific TM constructions see `examples/tm_examples.py`.
+```python
+is_in_language = tm.accepts('ab') # True or False
+```
+
+To get the whole language of a TM, up to a certain length, use the `.L()` method:
+
+```python
+language_of_tm = tm.L(4) # Tuple of all accepted words up to length 4, in len-lex order
+```
+
+> [!WARNING]
+> Be careful using this method with a large length value, as it will take exponential time to compute.
+
+To print the transition table of a TM for a nice visual, use the `.transition_table()` method:
+
+```python
+tm.transition_table() # Prints to terminal
+```
+
+Below is an example of creating a specific TM. This is TM $M_2$ in Sipser, p172.
+
+```python
+from autolang import TM
+
+# Create transition function dictionary
+tran2 = {
+    ('q1', '_'): ('qr', '_', 'R'), # This transition goes to reject, and can be omitted
+    ('q1', 'x'): ('qr', 'x', 'R'), # Same with this one
+    ('q1', '0'): ('q2', '_', 'R'),
+
+    ('q2', '_'): ('qa', '_', 'R'),
+    ('q2', 'x'): ('q2', 'x', 'R'),
+    ('q2', '0'): ('q3', 'x', 'R'),
+
+    ('q3', '_'): ('q5', '_', 'L'),
+    ('q3', 'x'): ('q3', 'x', 'R'),
+    ('q3', '0'): ('q4', '0', 'R'),
+
+    ('q4', '_'): ('qr', '_', 'R'), # Can be omitted
+    ('q4', 'x'): ('q4', 'x', 'R'),
+    ('q4', '0'): ('q3', 'x', 'R'),
+
+    ('q5', '_'): ('q2', '_', 'R'),
+    ('q5', 'x'): ('q5', 'x', 'L'),
+    ('q5', '0'): ('q5', '0', 'L')
+}
+# Create TM itself
+M2 = TM(tran2, 'q1', 'qa', 'qr', {'x'})
+
+# Check specific words
+M1.accepts('00') # True
+M1.accepts('000') # False
+
+# Generate the language up to length 3
+M1.L(10) # Returns ('0', '00', '0000', '00000000')
+
+# Print transition table
+M1.transition_table()
+```
 
 ### Creating NFAs/DFAs from Regex
 
-Constructing machines that recognise the language of a given regex is quite straightforward. Suppose you want an NFA that recognises the regex $(0+1)0*$. To do this, simply write:
-```Python
-nfa = regex_to_nfa('(0+1)0*') # You can use any name instead of `nfa` 
+Note that 'regex' in this context refers to *formal* regular expressions, which only support unions (`+`) and Kleene stars (`*`).
+
+Constructing automata that recognise the language of a given regex is quite straightforward, and is achieved by using the functions `regex_to_nfa()` and `nfa_to_dfa()`. You can also chain these functions together to directly create the DFA, without the intermediate NFA. 
+
+```python
+from autolang import regex_to_nfa, nfa_to_dfa
+
+R = '(0+1)0*' # define regex - words that start with 0 or 1, followed by zero or more 0s
+
+nfa = regex_to_nfa(R) # Create NFA
+dfa = nfa_to_dfa(nfa) # Create corresponding DFA
+
+# Or, create dfa directly
+dfa = nfa_to_dfa(regex_to_nfa(R))
 ```
-Then, to convert it to a DFA, write:
-```Python
-dfa = nfa_to_dfa(nfa) # Make sure you pass the correct `NFA` object
-```
-You can also create the dfa directly by writing:
-```Python
-dfa = nfa_to_dfa(regex_to_nfa('(0+1)0*'))
-```
-You can also create a DFA from *any* existing NFA, not just one that was created from a regex.
+
+Note you can also create a DFA *any* existing NFA, not just one that was created from a regex.
 
 
 ## Design Philosophy
@@ -522,6 +615,8 @@ Below is the general roadmap for the near future of the project. Please be aware
     - There will likely be options both to plot diagrams inline (i.e. for jupyter notebooks), and save them as an image for non-graphical/terminal-based environments
 
 - Option to store formatted transition tables (i.e. as a string), in addition to printing them directly to the terminal
+
+- Support accessing TM tape outside of just computing words.
 
 ### v0.3.0
 
