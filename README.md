@@ -1,6 +1,6 @@
 # autolang v0.1.0
 
-*README last updated 11/10/2025*
+*README last updated 12/10/2025*
 
 *autolang* is a simple Python project based around finite-state automata, formal languages and grammars, and Turing machines. It is intended for educational use, so that students who are studying the theory within this area may supplement their understanding by creating and running their own real automata to see how they work. 
 
@@ -70,8 +70,8 @@ dfa2_language = dfa2.L(10) # All words should match '(0+1)0*'
 - [License](#license)
 - [Credits and Acknowledgements](#credits-and-acknowledgements)
 
-
-## Description
+<details>
+<summary><h2 id="Description">Description</h2></summary>
 
 This project is intended for educational use while studying automata theory, formal languages, complexity theory, and related areas. While finite-state machines are very well understood and used ubiquitously in compiler toolchains, text processing software, and many other technologies, we thought that it would be helpful to create a framework for students to investigate these machines themselves, to enrich and accelerate their understanding of the theoretical concepts. To justify its existence in such a well-explored area, *autolang* is being developed with the following aims:
 
@@ -80,7 +80,7 @@ This project is intended for educational use while studying automata theory, for
 - **Tactile Intuition** : The original motivation of *autolang* was to 'bridge the gap' between the theoretical descriptions of state machines, and how they are practically implemented in code. It is often said that "Turing machines are the basis for all modern computers", which is true, but we wanted interested students to be able to draw a direct line from the abstract models to real practical applications, insofar as that is possible.
 
 While these aims are nowhere near fully-realised in v0.1.0, we expect the project to attain both enhanced features and much better usability in the coming weeks and months. These aims are discussed in more detail under [Design Philosophy](#design-philosophy) below.
-
+</details>
 
 ## Features
 
