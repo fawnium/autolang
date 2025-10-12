@@ -1,4 +1,4 @@
-# autolang v0.1.0
+# autolang v0.1.1
 
 *README last updated 12/10/2025*
 
@@ -6,7 +6,7 @@
 
 The project is heavily based on the theory from *Introduction to the Theory of Computation* by Michael Sipser.
 
-- **version** : 0.1.0
+- **version** : 0.1.1
 - **license** : MIT standard license
 - **build status** : prototype/WIP
 - **Python version** : 3.12+
@@ -14,7 +14,7 @@ The project is heavily based on the theory from *Introduction to the Theory of C
 - **official repository** : https://github.com/fawnium/autolang
 - **enquiries** : oisinlyons1@gmail.com
 
-v0.1.0 is the initial release, which includes creating and simulating various automaton models, printing transition tables, and constructing automata from regular expressions via canonical methods. See [Features](#features) for more details.
+The current release is v0.1.1, which includes creating and simulating various automaton models, printing transition tables, and constructing automata from regular expressions via canonical methods. See [Features](#features) for more details.
 
 Many more features are planned, as outlined in the [Roadmap](#roadmap).
 
@@ -79,7 +79,7 @@ This project is intended for educational use while studying automata theory, for
 
 - **Tactile Intuition** : The original motivation of *autolang* was to 'bridge the gap' between the theoretical descriptions of state machines, and how they are practically implemented in code. It is often said that "Turing machines are the basis for all modern computers", which is true, but we wanted interested students to be able to draw a direct line from the abstract models to real practical applications, insofar as that is possible.
 
-While these aims are nowhere near fully-realised in v0.1.0, we expect the project to attain both enhanced features and much better usability in the coming weeks and months. These aims are discussed in more detail under [Design Philosophy](#design-philosophy) below.
+While these aims are not fully-realised in the current prototype, v0.x, we expect the project to attain both enhanced features and much better usability in the coming weeks and months. These aims are discussed in more detail under [Design Philosophy](#design-philosophy) below.
 </details>
 
 <details>

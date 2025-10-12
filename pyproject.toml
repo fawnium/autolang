@@ -4,7 +4,10 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'autolang'
-version = '0.1.0'
+authors = [
+    { name = 'Lyons / fawnium' }
+]
+version = '0.1.1'
 description = 'A simple python project for simulating finite state automata, formal languages and grammars, and Turing machines.'
 readme = 'README.md'
 license = {file = 'LICENSE'}
