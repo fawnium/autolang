@@ -56,6 +56,21 @@ dfa2 = nfa_to_dfa(nfa) # Create corresponding DFA
 dfa2_language = dfa2.L(10) # All words should match '(0+1)0*'
 ```
 
+### README Contents
+- [Description](#description)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Design Philosophy](#design-philosophy)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Issues](#issues)
+- [Testing](#testing)
+- [Roadmap](#roadmap)
+- [License](#license)
+- [Credits and Acknowledgements](#credits-and-acknowledgements)
+
+
 ## Description
 
 This project is intended for educational use while studying automata theory, formal languages, complexity theory, and related areas. While finite-state machines are very well understood and used ubiquitously in compiler toolchains, text processing software, and many other technologies, we thought that it would be helpful to create a framework for students to investigate these machines themselves, to enrich and accelerate their understanding of the theoretical concepts. To justify its existence in such a well-explored area, *autolang* is being developed with the following aims:
