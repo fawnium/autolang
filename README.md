@@ -71,7 +71,7 @@ dfa2_language = dfa2.L(10) # All words should match '(0+1)0*'
 - [Credits and Acknowledgements](#credits-and-acknowledgements)
 
 <details>
-<summary><h2 id="Description">Description</h2></summary>
+<summary><h2 id="description">Description</h2></summary>
 
 This project is intended for educational use while studying automata theory, formal languages, complexity theory, and related areas. While finite-state machines are very well understood and used ubiquitously in compiler toolchains, text processing software, and many other technologies, we thought that it would be helpful to create a framework for students to investigate these machines themselves, to enrich and accelerate their understanding of the theoretical concepts. To justify its existence in such a well-explored area, *autolang* is being developed with the following aims:
 
@@ -237,7 +237,7 @@ This will update your installation from GitHub regardless of your current instal
 </details>
 
 <details>
-<summary><h2 id="Usage">Usage</h2></summary>
+<summary><h2 id="usage">Usage</h2></summary>
 
 This section describes how to import and use features once *autolang* has been installed. For installation guidance, see the [Installation](#installation) Section.
 
