@@ -1,4 +1,4 @@
-import matplotlib
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import networkx as nx
 
@@ -7,7 +7,7 @@ import networkx as nx
 
 # Return matplotlib figure with digraph on it
 # Can either be later saved or shown inline directly
-def render_digraph(digraph: nx.DiGraph, layout = 'spring') -> matplotlib.figure.Figure:
+def render_digraph(digraph: nx.DiGraph, layout = 'spring') -> Figure:
 
     # Dynamically choose layout algorithm
     layout_funcs = {

@@ -1,4 +1,4 @@
-import matplotlib
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
 import os
@@ -8,7 +8,7 @@ from datetime import datetime
 
 # Display matplotlib figure if GUI backend present
 # Save as image if no GUI backend
-def display_figure(fig: matplotlib.figure.Figure, mode = None, path = None, filename = None):
+def display_figure(fig: Figure, mode = None, path = None, filename = None):
     '''
     fig: matplotlib figure that plots transition diagram
     mode: either 'save' or 'inline'
