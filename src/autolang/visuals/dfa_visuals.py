@@ -3,9 +3,9 @@ from autolang.visuals.magic_chars import V, H, UL, UR, DL, DR, UDL, UDR, ULR, DL
 from autolang.visuals.settings_visuals import DEFAULT_ACCEPT_COL, DEFAULT_REJECT_COL
 from autolang.visuals.utils_visuals import get_edge_label
 
-import networkx as nx
-
 from collections.abc import Iterable
+
+import networkx as nx
 
 # Print formatted transition table of DFA
 # NOTE this function is only called by `DFA` object

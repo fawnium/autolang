@@ -2,8 +2,10 @@ from autolang.visuals.settings_visuals import MAX_LABEL_LENGTH
 from collections.abc import Iterable
 
 # Helper to generate edge labels
+# For NFAs and DFAs
 def get_edge_label(letters: Iterable[str], max_length = MAX_LABEL_LENGTH) -> str:
     letters = sorted(letters)
+    # TODO change epsilon '' representation
     # Total length is sum of lengths of letters plus number of commas added
     length = sum(len(letter) for letter in letters) + (len(letters) - 1)
     # Join all letters by commas if total length short enough
