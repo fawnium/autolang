@@ -51,23 +51,25 @@ def _transition_table_dfa(transition: TransitionDFA):
         print_filler_line()
         print_line(state)
     print_footer()
+
+# Helper to generate edge labels
+def get_edge_label(letters: Iterable[str], max_length = MAX_LABEL_LENGTH) -> str:
+    letters = sorted(letters)
+    # Total length is sum of lengths of letters plus number of commas added
+    length = sum(len(letter) for letter in letters) + (len(letters) - 1)
+    # Join all letters by commas if total length short enough
+    if length <= max_length:
+        return ','.join(letters)
+    # Only join some if total too long
+    else:
+        # TODO handle edge case where only one letter?
+        # TODO not just start and end, but as many as possible while still under max length?
+        return letters[0] + ',...,' + letters[-1]
     
 
 def _get_dfa_digraph(transition: TransitionDFA, start: str, accept: Iterable[str]) -> nx.DiGraph:
 
-    # Helper to generate edge labels
-    def get_edge_label(letters: Iterable[str], max_length = MAX_LABEL_LENGTH) -> str:
-        letters = sorted(letters)
-        # Total length is sum of lengths of letters plus number of commas added
-        length = sum(len(letter) for letter in letters) + (len(letters) - 1)
-        # Join all letters by commas if total length short enough
-        if length <= max_length:
-            return ','.join(letters)
-        # Only join some if total too long
-        else:
-            # TODO handle edge case where only one letter?
-            # TODO not just start and end, but as many as possible while still under max length?
-            return letters[0] + ',...,' + letters[-1]
+
         
     # Helper to determine node colour
     def get_node_col(state: str, accept_col: str = DEFAULT_ACCEPT_COL, reject_col: str = DEFAULT_REJECT_COL,
