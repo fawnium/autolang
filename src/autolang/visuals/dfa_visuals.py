@@ -1,6 +1,7 @@
 from autolang.backend.machines.structs_transition import TransitionDFA
 from autolang.visuals.magic_chars import V, H, UL, UR, DL, DR, UDL, UDR, ULR, DLR, UDLR
-from autolang.visuals.settings_visuals import MAX_LABEL_LENGTH, DEFAULT_ACCEPT_COL, DEFAULT_REJECT_COL
+from autolang.visuals.settings_visuals import DEFAULT_ACCEPT_COL, DEFAULT_REJECT_COL
+from autolang.visuals.utils_visuals import get_edge_label
 
 import networkx as nx
 
@@ -44,20 +45,6 @@ def _transition_table_dfa(transition: TransitionDFA):
         print_line(state)
     print_footer()
 
-# Helper to generate edge labels
-def get_edge_label(letters: Iterable[str], max_length = MAX_LABEL_LENGTH) -> str:
-    letters = sorted(letters)
-    # Total length is sum of lengths of letters plus number of commas added
-    length = sum(len(letter) for letter in letters) + (len(letters) - 1)
-    # Join all letters by commas if total length short enough
-    if length <= max_length:
-        return ','.join(letters)
-    # Only join some if total too long
-    else:
-        # TODO handle edge case where only one letter?
-        # TODO not just start and end, but as many as possible while still under max length?
-        return letters[0] + ',...,' + letters[-1]
-    
 
 def _get_dfa_digraph(transition: TransitionDFA, start: str, accept: Iterable[str]) -> nx.DiGraph:
   
