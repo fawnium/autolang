@@ -87,16 +87,17 @@ def _get_dfa_digraph(transition: TransitionDFA, start: str, accept: Iterable[str
             edge_label_map[(state, next_state)] = [letter]
     # Convert labels from lists of letters to formatted strings
     edge_label_map = {(state, next_state): get_edge_label(letters) for (state, next_state), letters in edge_label_map.items()}
-        
+    
     # Create final digraph
-    G = nx.DiGraph()
+    digraph = nx.DiGraph()
     # Add nodes
     for state in transition.states:
-        G.add_node(state, color = get_node_col(state))
+        digraph.add_node(state, color = get_node_col(state))
     # Add edges
     for (state, next_state), label in edge_label_map.items():
-        G.add_edge(state, next_state, label = label)
+        digraph.add_edge(state, next_state, label = label)
     # Add metadata in case needed later
-    G.graph['start'] = start
-    G.graph['accept'] = tuple(accept)
-    return G
+    digraph.graph['start'] = start
+    digraph.graph['accept'] = tuple(accept)
+    digraph.graph['name'] = 'DFA with ' + str(len(transition.states)) + ' states and alphabet {' + ','.join(transition.alphabet) + '}' 
+    return digraph
