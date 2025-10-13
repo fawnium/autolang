@@ -10,7 +10,7 @@ MAX_LABEL_LENGTH = 8
 
 # Default colours for states in transition diagram
 DEFAULT_ACCEPT_COL = 'lightgreen'
-DEFAULT_REJECT_COL = 'white'
+DEFAULT_REJECT_COL = 'lightgray'
 DEFAULT_START_ACCEPT_COL = 'green'
 DEFAULT_START_REJECT_COL = 'gray'
 
