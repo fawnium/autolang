@@ -2,7 +2,10 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import networkx as nx
 
-
+'''
+Takes a digraph representing automaton, and generates a figure
+- does *not* actually display the figure, see `display_diagrams.py`
+'''
 
 
 # Return matplotlib figure with digraph on it

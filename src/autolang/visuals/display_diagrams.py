@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import os
 from datetime import datetime
 
+'''
+Takes existing figure, and either displays it inline or saves it as an image.
+'''
 
 
 # Display matplotlib figure if GUI backend present
