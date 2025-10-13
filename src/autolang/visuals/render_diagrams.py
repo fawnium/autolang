@@ -39,8 +39,12 @@ def render_digraph(digraph: nx.DiGraph, layout = 'spring') -> Figure:
     node_colors = [digraph.nodes[node].get('color', 'red') for node in digraph.nodes]
 
     # Draw each graph component to fig
-    nx.draw_networkx_nodes(digraph, pos=pos, ax=ax, node_color=node_colors, edgecolors='black')
-    nx.draw_networkx_edges(digraph, pos=pos, ax=ax, arrows=True)
+    nx.draw_networkx_nodes(digraph, pos=pos, ax=ax, 
+                           node_color=node_colors, 
+                           edgecolors='black')
+    nx.draw_networkx_edges(digraph, pos=pos, ax=ax, 
+                           arrows=True,
+                           connectionstyle='arc3, rad=0.1')
     nx.draw_networkx_labels(digraph, pos=pos, ax=ax)
     edge_labels = nx.get_edge_attributes(digraph, 'label') # Extract edge labels into dict
     nx.draw_networkx_edge_labels(digraph, pos=pos, ax=ax, edge_labels=edge_labels)
