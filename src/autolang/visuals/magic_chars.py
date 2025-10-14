@@ -22,6 +22,7 @@ UDLR = '╬'
 # Special chars
 EPSILON = 'ε'
 EMPTY = '∅'
+ELLIPSIS = '…'
 
 # Right arrow for diagram edge labels
 RIGHT_ARROW = '→'
