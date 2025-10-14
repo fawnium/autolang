@@ -2,6 +2,8 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import networkx as nx
 
+from autolang.visuals.settings_visuals import DEFAULT_NETWORKX_LAYOUT
+
 '''
 Takes a digraph representing automaton, and generates a figure
 - does *not* actually display the figure, see `display_diagrams.py`
@@ -10,7 +12,8 @@ Takes a digraph representing automaton, and generates a figure
 
 # Return matplotlib figure with digraph on it
 # Can either be later saved or shown inline directly
-def render_digraph(digraph: nx.DiGraph, layout = 'spring') -> Figure:
+def render_digraph(digraph: nx.DiGraph, 
+                   layout: str = DEFAULT_NETWORKX_LAYOUT) -> Figure:
 
     # Dynamically choose layout algorithm
     layout_funcs = {
