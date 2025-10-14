@@ -13,7 +13,9 @@ Takes a digraph representing automaton, and generates a figure
 # Return matplotlib figure with digraph on it
 # Can either be later saved or shown inline directly
 def render_digraph(digraph: nx.DiGraph, 
-                   layout: str = DEFAULT_NETWORKX_LAYOUT) -> Figure:
+                   layout: str = DEFAULT_NETWORKX_LAYOUT,
+                   *,
+                   hello=None) -> Figure:
 
     # Dynamically choose layout algorithm
     layout_funcs = {
@@ -44,13 +46,69 @@ def render_digraph(digraph: nx.DiGraph,
     # Draw each graph component to fig
     nx.draw_networkx_nodes(digraph, pos=pos, ax=ax, 
                            node_color=node_colors, 
-                           edgecolors='black')
+                           edgecolors='black',
+
+                           nodelist=None,
+                           node_size=300,
+                           node_shape='o',
+                           alpha=None,
+                           linewidths=None,
+                           margins=None,
+                           hide_ticks=True)
+    
     nx.draw_networkx_edges(digraph, pos=pos, ax=ax, 
                            arrows=True,
-                           connectionstyle='arc3, rad=0.1')
-    nx.draw_networkx_labels(digraph, pos=pos, ax=ax)
-    edge_labels = nx.get_edge_attributes(digraph, 'label') # Extract edge labels into dict
-    nx.draw_networkx_edge_labels(digraph, pos=pos, ax=ax, edge_labels=edge_labels)
+                           connectionstyle='arc3, rad=0.1',
+                           
+                           edgelist=None,
+                           width=1.0,
+                           edge_color='k',
+                           style='solid',
+                           alpha=None,
+                           arrowstyle=None,
+                           arrowsize=10,
 
+                           node_size=300,
+                           nodelist=None,
+                           node_shape='o',
+                           hide_ticks=True)
+    
+    nx.draw_networkx_labels(digraph, pos=pos, ax=ax,
+                            labels=None,
+                            font_size=12,
+                            font_color='k',
+                            font_weight='normal', # Could use for start state?
+                            font_family='sans-serif',
+                            
+                            alpha=None,
+                            bbox=None,
+                            horizontalalignment='center',
+                            verticalalignment='center',
+                            
+                            clip_on=True,
+                            hide_ticks=True)
+
+    edge_labels = nx.get_edge_attributes(digraph, 'label') # Extract edge labels into dict
+    nx.draw_networkx_edge_labels(digraph, pos=pos, ax=ax, 
+                                 edge_labels=edge_labels,
+                                 connectionstyle='arc3, rad=0.1',
+
+                                 label_pos=0.5,
+                                 font_size=10,
+                                 font_color='k',
+                                 font_weight='normal',
+                                 font_family='sans-serif',
+                                 
+                                 alpha=None,
+                                 bbox=None, # NOTE probably important
+                                 horizontalalignment='center',
+                                 verticalalignment='center',
+                                 rotate=False,
+
+                                 node_size=300,
+                                 nodelist=None,
+
+                                 clip_on=True,
+                                 hide_ticks=True)
     return fig
 
