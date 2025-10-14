@@ -26,13 +26,37 @@ def get_edge_label(letters: Iterable[str], max_length = MAX_LABEL_LENGTH) -> str
 def get_edge_label_pda(items: Iterable[tuple[str, str, str]], max_length = MAX_LABEL_LENGTH) -> str:
     '''
     - each `item` is (letter, stack_top, stack_push)
-    - items get encoded as 'letter, stack_top -> stack_push'
+    - items get encoded as 'letter,stack_top->stack_push'
     - if multiple items, they are joined by newlines in accordance with Sipser
     '''
     items = sorted(items, key = lambda triple: triple[0]) # Sort only by 'letter'
     # Format items
     items = [(eps(letter) + ',' + eps(stack_top) + RIGHT_ARROW + eps(stack_push)) for (letter, stack_top, stack_push) in items]
     # TODO handle long length - length must be different to above case I think
+    length = 0 # Placeholder
+    if length <= max_length:
+        return '\n'.join(items)
+    else:
+        pass
+
+
+# Get edge labels for TM edge
+def get_edge_label_tm(items: Iterable[tuple[str, str, str]], max_length = MAX_LABEL_LENGTH) -> str:
+    '''
+    - each `item` is (letter, write, direction)
+    - items get encoded as 'letter->write,direction'
+        - if write is same as letter, it's just 'letter->direction'
+    - if multiple items, they are joined by newlines in accordance with Sipser
+    '''
+    # Helper to format single item
+    def format_item(item: tuple[str, str, str]) -> str:
+        if item[0] == item[1]:
+            return item[0] + RIGHT_ARROW + item[2]
+        return item[0] + RIGHT_ARROW + item[1] + ',' + item[2]
+    items = sorted(items, key = lambda triple: triple[0]) # Sort only by 'letter'
+    # Format items
+    items = [format_item(item) for item in items]
+    # TODO handle long length
     length = 0 # Placeholder
     if length <= max_length:
         return '\n'.join(items)
