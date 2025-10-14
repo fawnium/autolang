@@ -1,5 +1,11 @@
 from autolang.backend.machines.structs_transition import TransitionPDA
 from autolang.visuals.magic_chars import V, H, UL, UR, DL, DR, UDL, UDR, ULR, DLR, UDLR, EPSILON, EMPTY
+from autolang.visuals.settings_visuals import DEFAULT_ACCEPT_COL, DEFAULT_REJECT_COL
+from autolang.visuals.utils_visuals import get_edge_label_pda
+
+from collections.abc import Iterable
+
+import networkx as nx
 
 
 # Helpers to format list of next configs as a table entry
@@ -116,3 +122,37 @@ def _transition_table_pda(transition: TransitionPDA):
         print_filler_line()
         print_line(state)
     print_footer()
+
+
+def _get_pda_digraph(transition: TransitionPDA, start: str, accept: Iterable[str]) -> nx.DiGraph:
+
+    # Helper to determine node colour
+    def get_node_col(state: str, accept_col: str = DEFAULT_ACCEPT_COL, reject_col: str = DEFAULT_REJECT_COL) -> str:
+        return accept_col if state in accept else reject_col
+    
+    # Map (state, next_state) edges to respective label
+    # Collect letters + stack pushes into single edge between the same states
+    edge_label_map = {}
+    for (state, letter, stack_top), next_configs in transition.items():
+        for (next_state, stack_push) in next_configs:
+            if (state, next_state) in edge_label_map:
+                edge_label_map[(state, next_state)].append((letter, stack_top, stack_push))
+            else:
+                edge_label_map[(state, next_state)] = [(letter, stack_top, stack_push)]
+    # Convert edge labels from lists of triples to formatted strings
+    edge_label_map = {edge: get_edge_label_pda(label) for edge, label in edge_label_map.items()}
+    
+    # Create final DiGraph
+    digraph = nx.DiGraph()
+    # Add nodes
+    for state in transition.states:
+        digraph.add_node(state, color = get_node_col(state))
+    # Add edges
+    for (state, next_state), label in edge_label_map.items():
+        digraph.add_edge(state, next_state, label = label)
+    # Add metadata
+    digraph.graph['start'] = start
+    digraph.graph['accept'] = tuple(accept)
+    digraph.graph['name'] = 'PDA with ' + str(len(transition.states)) + ' states, input alphabet {' + ','.join(transition.input_alphabet) + '}, stack {' + ','.join(transition.stack_alphabet) + '}'
+    return digraph
+
