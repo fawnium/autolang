@@ -81,5 +81,6 @@ def _get_nfa_digraph(transition: TransitionNFA, start: str, accept: Iterable[str
     digraph.graph['start'] = start
     digraph.graph['accept'] = tuple(accept)
     digraph.graph['name'] = 'NFA with ' + str(len(transition.states)) + ' states and alphabet {' + ','.join(transition.alphabet) + '}'
+    digraph.graph['kind'] = 'NFA'
     return digraph
 

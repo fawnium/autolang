@@ -94,4 +94,5 @@ def _get_tm_digraph(transition: TransitionTM,
     digraph.graph['accept'] = accept
     digraph.graph['reject'] = reject
     digraph.graph['name'] = 'TM with ' + str(len(transition.states)) + ' states and input alphabet {' + ','.join(transition.input_alphabet) + '}'
+    digraph.graph['kind'] = 'TM'
     return digraph

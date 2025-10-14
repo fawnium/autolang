@@ -74,5 +74,6 @@ def _get_dfa_digraph(transition: TransitionDFA, start: str, accept: Iterable[str
     # Add metadata in case needed later
     digraph.graph['start'] = start
     digraph.graph['accept'] = tuple(accept)
-    digraph.graph['name'] = 'DFA with ' + str(len(transition.states)) + ' states and alphabet {' + ','.join(transition.alphabet) + '}' 
+    digraph.graph['name'] = 'DFA with ' + str(len(transition.states)) + ' states and alphabet {' + ','.join(transition.alphabet) + '}'
+    digraph.graph['kind'] = 'DFA' 
     return digraph

@@ -154,5 +154,6 @@ def _get_pda_digraph(transition: TransitionPDA, start: str, accept: Iterable[str
     digraph.graph['start'] = start
     digraph.graph['accept'] = tuple(accept)
     digraph.graph['name'] = 'PDA with ' + str(len(transition.states)) + ' states, input alphabet {' + ','.join(transition.input_alphabet) + '}, stack {' + ','.join(transition.stack_alphabet) + '}'
+    digraph.graph['kind'] = 'PDA'
     return digraph
 
