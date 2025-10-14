@@ -1,5 +1,11 @@
 from autolang.backend.machines.structs_transition import TransitionTM, DEFAULT_BLANK, DEFAULT_LEFT, DEFAULT_RIGHT
 from autolang.visuals.magic_chars import V, H, UL, UR, DL, DR, UDL, UDR, ULR, DLR, UDLR, EPSILON, EMPTY
+from autolang.visuals.settings_visuals import DEFAULT_ACCEPT_COL, DEFAULT_REJECT_COL
+from autolang.visuals.utils_visuals import get_edge_label_tm
+
+from collections.abc import Iterable
+
+import networkx as nx
 
 # Helper to format table entries
 def next_config_to_str(config: tuple[str, str, str], halting: tuple[str, str]) -> str:
@@ -47,3 +53,45 @@ def _transition_table_tm(transition: TransitionTM):
         print_filler_line()
         print_line(state)
     print_footer()
+
+
+def _get_tm_digraph(transition: TransitionTM, 
+                    start: str, 
+                    accept: str, 
+                    reject: str) -> nx.DiGraph:
+
+    # Helper to get node colours
+    # NOTE different to other models, due to unique reject state
+    def get_node_col(state: str, 
+                     accept_col: str = DEFAULT_ACCEPT_COL, 
+                     reject_col: str = 'red', 
+                     regular_col: str = DEFAULT_REJECT_COL) -> str:
+        if state == accept: return accept_col
+        elif state == reject: return reject_col
+        else: return regular_col
+
+    # Map (state, next_state) edges to respective label
+    # Collect multiple transitions between the same states to single edge
+    edge_label_map = {}
+    for (state, letter), (next_state, write, direction) in transition.items():
+        if (state, next_state) in edge_label_map:
+            edge_label_map[(state, next_state)].append((letter, write, direction))
+        else:
+            edge_label_map[(state, next_state)] = [(letter, write, direction)]
+    # Convert edge labels from lists of triples to formatted strings
+    edge_label_map = {edge: get_edge_label_tm(label) for edge, label in edge_label_map.items()}
+
+    # Create final digraph
+    digraph = nx.DiGraph()
+    # Add notes
+    for state in transition.states:
+        digraph.add_node(state, color = get_node_col(state))
+    # Add edges
+    for (state, next_state), label in edge_label_map.items():
+        digraph.add_edge(state, next_state, label = label)
+    # Add metadata
+    digraph.graph['start'] = start
+    digraph.graph['accept'] = accept
+    digraph.graph['reject'] = reject
+    digraph.graph['name'] = 'TM with ' + str(len(transition.states)) + ' states and input alphabet {' + ','.join(transition.input_alphabet) + '}'
+    return digraph
