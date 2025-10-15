@@ -1,13 +1,20 @@
 from autolang.backend.utils import words_to_length
 from autolang.backend.machines.structs_config import ConfigPDA
 from autolang.backend.machines.structs_transition import TransitionPDA
+from autolang.backend.machines.settings_machines import DEFAULT_LANGUAGE_LENGTH
+
 from autolang.visuals.pda_visuals import _transition_table_pda
+
 from collections.abc import Iterable, Generator
 
 class PDA:
     # NOTE stack is represented as a string *not* a list of chars, and the top is defined as the start (stack[0])
 
-    def __init__(self, transition: dict[tuple[str, str, str], tuple[tuple[str, str], ...]], start: str, accept: Iterable[str]):
+    def __init__(self, 
+                 transition: dict[tuple[str, str, str], tuple[tuple[str, str], ...]], 
+                 start: str, 
+                 accept: Iterable[str]):
+        
         self.transition = TransitionPDA(transition) # Wrap transition function and check valid encoding
         self.states = self.transition.states
         self.input_alphabet = self.transition.input_alphabet
@@ -28,7 +35,9 @@ class PDA:
         return self.__repr__()
     
     # Get list of next configs reachable from current state, next letter, and stack top - including via not reading one or both of latter
-    def next_configs(self, config: ConfigPDA) -> tuple[ConfigPDA]:
+    def next_configs(self, 
+                     config: ConfigPDA) -> tuple[ConfigPDA]:
+        
         configs = [] # All reachable next configs, filled below
         # Extract current config
         current_state = config.state
@@ -50,7 +59,8 @@ class PDA:
                         configs.append(ConfigPDA(next_state, next_suffix, next_stack, next_path))
         return configs
     
-    def accepts(self, word: str) -> bool:
+    def accepts(self, 
+                word: str) -> bool:
         '''
         - initialise `queue` with start state and whole input word
         - simulate all computation branches using BFS:
@@ -81,7 +91,10 @@ class PDA:
     
     # Generate language of PDA up to given length
     # By default, returns tuple up-front, returns generator if lazy = True
-    def L(self, n: int = 5, lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+    def L(self, 
+          n: int = DEFAULT_LANGUAGE_LENGTH, 
+          lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+        
         # Generator object that produces words accepted by PDA
         gen = (word for word in words_to_length(n, self.input_alphabet) if self.accepts(word))
         return gen if lazy else tuple(gen)

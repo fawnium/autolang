@@ -1,8 +1,12 @@
 from autolang.backend.utils import words_to_length
 from autolang.backend.machines.structs_config import ConfigTM
 from autolang.backend.machines.structs_transition import TransitionTM
-from autolang.backend.machines.structs_transition import DEFAULT_ACCEPT, DEFAULT_REJECT, DEFAULT_BLANK, DEFAULT_LEFT, DEFAULT_RIGHT
+from autolang.backend.machines.structs_transition import (DEFAULT_ACCEPT, DEFAULT_REJECT, 
+                                                          DEFAULT_BLANK, DEFAULT_LEFT, DEFAULT_RIGHT)
+from autolang.backend.machines.settings_machines import DEFAULT_LANGUAGE_LENGTH
+
 from autolang.visuals.tm_visuals import _transition_table_tm
+
 from collections.abc import Iterable, Generator
 
 # Arbitrary limit to computation steps in case of non-halting with no infinite loops detected
@@ -14,8 +18,13 @@ class TM:
     # NOTE model also uses singly-infinite tape *not* doubly-infinite, so no left side before start cell
     # `reserved_letters` arg is for letters which are only for the tape alphabet and NOT the input alphabet
 
-    def __init__(self, transition: dict[tuple[str, str], tuple[str, str, str]], 
-                 start: str, accept: str = DEFAULT_ACCEPT, reject: str = DEFAULT_REJECT, reserved_letters: Iterable[str] = set()):
+    def __init__(self, 
+                 transition: dict[tuple[str, str], tuple[str, str, str]], 
+                 start: str, 
+                 accept: str = DEFAULT_ACCEPT, 
+                 reject: str = DEFAULT_REJECT, 
+                 reserved_letters: Iterable[str] = set()):
+        
         self.transition = TransitionTM(transition, accept, reject, reserved_letters) # Wrap transition function and check valid encoding, and ensure halting states are valid
         self.states = self.transition.states
         self.input_alphabet = self.transition.input_alphabet
@@ -35,7 +44,11 @@ class TM:
         return self.__repr__()
     
     # Move tape head and dynamically resize tape list if needed
-    def move(self, head: int, tape: list[str], direction: str) -> tuple[int, list[str]]:
+    def move(self, 
+             head: int, 
+             tape: list[str], 
+             direction: str) -> tuple[int, list[str]]:
+        
         direction = direction.upper()
         if direction == DEFAULT_LEFT:
             head = max(head - 1, 0) # Prevent moving past start cell
@@ -48,7 +61,9 @@ class TM:
         return head, tape
     
     # Transition to next config by reading current letter
-    def next_config(self, config: ConfigTM) -> ConfigTM:
+    def next_config(self, 
+                    config: ConfigTM) -> ConfigTM:
+        
         # Extract current config
         state = config.state
         tape = config.tape
@@ -62,7 +77,8 @@ class TM:
         return ConfigTM(next_state, tape, head, next_path)
     
     # Compute input word and decide acceptance
-    def accepts(self, word: str) -> bool: # Returns `None` if input word undecidable
+    def accepts(self, 
+                word: str) -> bool: # Returns `None` if input word undecidable
         '''
         - Transition through configs until accept/reject state reached, or total steps exceeds limit `MAX_STEPS`
         - Only one config variable `current` needed (no `queue`) due to determinism
@@ -97,7 +113,10 @@ class TM:
         
     # Generate language of TM up to given length
     # By default, returns tuple up-front, returns generator if lazy = True
-    def L(self, n: int = 5, lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+    def L(self, 
+          n: int = DEFAULT_LANGUAGE_LENGTH, 
+          lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+        
         # Generator object that produces words accepted by TM
         gen = (word for word in words_to_length(n, self.input_alphabet) if self.accepts(word))
         return gen if lazy else tuple(gen)

@@ -1,11 +1,18 @@
 from autolang.backend.utils import words_to_length
 from autolang.backend.machines.structs_transition import TransitionDFA
+from autolang.backend.machines.settings_machines import DEFAULT_LANGUAGE_LENGTH
+
 from autolang.visuals.dfa_visuals import _transition_table_dfa
+
 from collections.abc import Iterable, Generator
 
 class DFA:
 
-    def __init__(self, transition: dict[tuple[str, str], str], start: str, accept: Iterable[str]):
+    def __init__(self, 
+                 transition: dict[tuple[str, str], str], 
+                 start: str, 
+                 accept: Iterable[str]):
+        
         self.transition = TransitionDFA(transition) # Wrap transition function and check valid encoding
         self.states = self.transition.states # Unpack states
         self.alphabet = self.transition.alphabet # Unpack alphabet
@@ -24,7 +31,9 @@ class DFA:
     def __str__(self):
         return self.__repr__()
     
-    def accepts(self, word: str) -> bool:
+    def accepts(self, 
+                word: str) -> bool:
+        
         if not isinstance(word, str): raise TypeError(f'Input word \'{word}\' is not a string.')
         if not all(letter in self.alphabet for letter in word): # Auto-reject if any unrecognised letters. TODO maybe this should raise an error instead?
             return False
@@ -35,7 +44,10 @@ class DFA:
     
     # Generate language of DFA up to given length
     # By default, returns tuple up-front, returns generator if lazy = True
-    def L(self, n: int = 5, lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+    def L(self, 
+          n: int = DEFAULT_LANGUAGE_LENGTH, 
+          lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+        
         # Generator object that produces words accepted by DFA
         gen = (word for word in words_to_length(n, self.alphabet) if self.accepts(word))
         return gen if lazy else tuple(gen)

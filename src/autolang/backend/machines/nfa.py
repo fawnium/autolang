@@ -1,12 +1,19 @@
 from autolang.backend.utils import words_to_length
 from autolang.backend.machines.structs_config import ConfigNFA
 from autolang.backend.machines.structs_transition import TransitionNFA
+from autolang.backend.machines.settings_machines import DEFAULT_LANGUAGE_LENGTH
+
 from autolang.visuals.nfa_visuals import _transition_table_nfa
+
 from collections.abc import Iterable, Generator
 
 class NFA:
 
-    def __init__(self, transition: dict[tuple[str, str], tuple[str, ...]], start: str, accept: Iterable[str]):
+    def __init__(self, 
+                 transition: dict[tuple[str, str], tuple[str, ...]], 
+                 start: str, 
+                 accept: Iterable[str]):
+        
         self.transition = TransitionNFA(transition) # Wrap transition function and check valid encoding
         self.states = self.transition.states
         self.alphabet = self.transition.alphabet
@@ -26,7 +33,10 @@ class NFA:
         return self.__repr__()
     
     # TODO refactor more into `next_states` from `accepts` as with PDA case?
-    def next_states(self, state: str, letter: str) -> tuple[str, ...]:
+    def next_states(self, 
+                    state: str, 
+                    letter: str) -> tuple[str, ...]:
+        
         if state not in self.states:
             raise ValueError(f'State \'{state}\' is not a valid state for {self}.')
         if (letter not in self.alphabet) and (letter != ''):
@@ -35,7 +45,8 @@ class NFA:
             return tuple() # Empty next states if key not present, because no transitions
         return self.transition[(state, letter)]
     
-    def accepts(self, word: str) -> bool:
+    def accepts(self, 
+                word: str) -> bool:
         '''
         - initialise `queue` with start state and whole input word
         - simulate all computation branches using BFS:
@@ -75,7 +86,10 @@ class NFA:
     
     # Generate language of NFA up to given length
     # By default, returns tuple up-front, returns generator if lazy = True
-    def L(self, n: int = 5, lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+    def L(self, 
+          n: int = DEFAULT_LANGUAGE_LENGTH, 
+          lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+        
         # Generator object that produces words accepted by NFA
         gen = (word for word in words_to_length(n, self.alphabet) if self.accepts(word))
         return gen if lazy else tuple(gen)
