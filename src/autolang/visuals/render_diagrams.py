@@ -2,7 +2,15 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from autolang.visuals.settings_visuals import DEFAULT_NETWORKX_LAYOUT
+from autolang.visuals.settings_visuals import (DEFAULT_NETWORKX_LAYOUT,
+                                               DEFAULT_NODE_SIZE,
+                                               DEFAULT_EDGE_CONNECTION_STYLE,
+                                               DEFAULT_EDGE_CURVATURE,
+                                               DEFAULT_EDGE_WIDTH,
+                                               DEFAULT_EDGE_ARROW_STYLE,
+                                               DEFAULT_EDGE_ARROW_SIZE,
+                                               DEFAULT_NODE_FONT_SIZE,
+                                               DEFAULT_EDGE_FONT_SIZE)
 
 '''
 Takes a digraph representing automaton, and generates a figure
@@ -10,13 +18,8 @@ Takes a digraph representing automaton, and generates a figure
 '''
 
 
-# Return matplotlib figure with digraph on it
-# Can either be later saved or shown inline directly
-def render_digraph(digraph: nx.DiGraph, 
-                   layout: str = DEFAULT_NETWORKX_LAYOUT,
-                   *,
-                   hello=None) -> Figure:
-
+# Helper to get `pos` node coordinates
+def get_pos(digraph: nx.DiGraph, layout: str) -> dict:
     # Dynamically choose layout algorithm
     layout_funcs = {
         'spring': nx.spring_layout,
@@ -32,6 +35,31 @@ def render_digraph(digraph: nx.DiGraph,
         raise ValueError(f'\'{layout}\' is not a recognised layout.')
     # Maps nodes to coordinates in plot
     pos = layout_funcs[layout](digraph)
+    return pos
+
+
+# Return matplotlib figure with digraph on it
+# Can either be later saved or shown inline directly
+def render_digraph(digraph: nx.DiGraph, 
+                   layout: str = DEFAULT_NETWORKX_LAYOUT,
+                   *,
+                   node_size: int = DEFAULT_NODE_SIZE,
+
+                   edge_connection_style: str = DEFAULT_EDGE_CONNECTION_STYLE, # connectionstyle e.g. 'arc3'
+                   edge_curvature: float = DEFAULT_EDGE_CURVATURE, # radius e.g. 0.2
+                   edge_width: float | None = DEFAULT_EDGE_WIDTH,
+                   edge_arrow_style: str | None = DEFAULT_EDGE_ARROW_STYLE,
+                   edge_arrow_size: int = DEFAULT_EDGE_ARROW_SIZE,
+                   
+                   node_font_size: int = DEFAULT_NODE_FONT_SIZE,
+                   edge_font_size: int = DEFAULT_EDGE_FONT_SIZE) -> Figure:
+
+    # Dictionary mapping nodes to coordinates
+    pos = get_pos(digraph, layout)
+
+    # Specify edge curvature
+    # e.g. 'arc3, rad=0.1'
+    connectionstyle_str = edge_connection_style + ', rad=' + str(edge_curvature)
 
     # Create matplotlib figure
     fig, ax = plt.subplots()
@@ -49,7 +77,7 @@ def render_digraph(digraph: nx.DiGraph,
                            edgecolors='black',
 
                            nodelist=None,
-                           node_size=300,
+                           node_size=node_size,
                            node_shape='o',
                            alpha=None,
                            linewidths=None,
@@ -58,24 +86,24 @@ def render_digraph(digraph: nx.DiGraph,
     
     nx.draw_networkx_edges(digraph, pos=pos, ax=ax, 
                            arrows=True,
-                           connectionstyle='arc3, rad=0.1',
+                           connectionstyle=connectionstyle_str,
                            
                            edgelist=None,
-                           width=1.0,
+                           width=edge_width,
                            edge_color='k',
                            style='solid',
                            alpha=None,
-                           arrowstyle=None,
-                           arrowsize=10,
+                           arrowstyle=edge_arrow_style,
+                           arrowsize=edge_arrow_size,
 
-                           node_size=300,
+                           node_size=node_size,
                            nodelist=None,
                            node_shape='o',
                            hide_ticks=True)
     
     nx.draw_networkx_labels(digraph, pos=pos, ax=ax,
                             labels=None,
-                            font_size=12,
+                            font_size=node_font_size,
                             font_color='k',
                             font_weight='normal', # Could use for start state?
                             font_family='sans-serif',
@@ -91,10 +119,10 @@ def render_digraph(digraph: nx.DiGraph,
     edge_labels = nx.get_edge_attributes(digraph, 'label') # Extract edge labels into dict
     nx.draw_networkx_edge_labels(digraph, pos=pos, ax=ax, 
                                  edge_labels=edge_labels,
-                                 connectionstyle='arc3, rad=0.1',
+                                 connectionstyle=connectionstyle_str,
 
                                  label_pos=0.5,
-                                 font_size=10,
+                                 font_size=edge_font_size,
                                  font_color='k',
                                  font_weight='normal',
                                  font_family='sans-serif',
@@ -105,7 +133,7 @@ def render_digraph(digraph: nx.DiGraph,
                                  verticalalignment='center',
                                  rotate=False,
 
-                                 node_size=300,
+                                 node_size=node_size,
                                  nodelist=None,
 
                                  clip_on=True,
