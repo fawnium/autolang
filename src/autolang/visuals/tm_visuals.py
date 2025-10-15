@@ -64,7 +64,7 @@ def _get_tm_digraph(transition: TransitionTM,
     # NOTE different to other models, due to unique reject state
     def get_node_col(state: str, 
                      accept_col: str = DEFAULT_ACCEPT_COL, 
-                     reject_col: str = 'red', 
+                     reject_col: str = 'lightcoral', 
                      regular_col: str = DEFAULT_REJECT_COL) -> str:
         if state == accept: return accept_col
         elif state == reject: return reject_col
