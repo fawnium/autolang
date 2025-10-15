@@ -29,5 +29,7 @@ setup_automata.py
 # Transition diagram tests
 images/
 
+requirements.txt
+
 
 

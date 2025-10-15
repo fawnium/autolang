@@ -10,7 +10,9 @@ from autolang.visuals.settings_visuals import (DEFAULT_NETWORKX_LAYOUT,
                                                DEFAULT_EDGE_ARROW_STYLE,
                                                DEFAULT_EDGE_ARROW_SIZE,
                                                DEFAULT_NODE_FONT_SIZE,
-                                               DEFAULT_EDGE_FONT_SIZE)
+                                               DEFAULT_EDGE_FONT_SIZE,
+                                               
+                                               EDGE_LABEL_BBOX)
 
 '''
 Takes a digraph representing automaton, and generates a figure
@@ -19,15 +21,17 @@ Takes a digraph representing automaton, and generates a figure
 
 
 # Helper to get `pos` node coordinates
-def get_pos(digraph: nx.DiGraph, layout: str) -> dict:
+def get_pos(digraph: nx.DiGraph, layout: str | None) -> dict:
+    # Catch None passed
+    if layout is None: layout = DEFAULT_NETWORKX_LAYOUT
     # Dynamically choose layout algorithm
     layout_funcs = {
         'spring': nx.spring_layout,
         'shell': nx.shell_layout,
         'kamada_kawai': nx.kamada_kawai_layout,
         'circular': nx.circular_layout,
-        'spectral': nx.spectral_layout,
-        'planar': nx.planar_layout, # NOTE will often raise error!
+        #'spectral': nx.spectral_layout,
+        #'planar': nx.planar_layout, # NOTE will often raise error!
         'spiral': nx.spiral_layout,
         'random': nx.random_layout
     }
@@ -71,6 +75,9 @@ def render_digraph(digraph: nx.DiGraph,
     # NOTE default colour 'red' should never appear
     node_colors = [digraph.nodes[node].get('color', 'red') for node in digraph.nodes]
 
+    # Make start state bold
+    node_font_weights = {node: ('bold' if node == digraph.graph['start'] else 'normal') for node in digraph.nodes}
+
     # Draw each graph component to fig
     nx.draw_networkx_nodes(digraph, pos=pos, ax=ax, 
                            node_color=node_colors, 
@@ -105,7 +112,7 @@ def render_digraph(digraph: nx.DiGraph,
                             labels=None,
                             font_size=node_font_size,
                             font_color='k',
-                            font_weight='normal', # Could use for start state?
+                            font_weight=node_font_weights, # Could use for start state?
                             font_family='sans-serif',
                             
                             alpha=None,
@@ -128,7 +135,7 @@ def render_digraph(digraph: nx.DiGraph,
                                  font_family='sans-serif',
                                  
                                  alpha=None,
-                                 bbox=None, # NOTE probably important
+                                 bbox=EDGE_LABEL_BBOX, # NOTE probably important
                                  horizontalalignment='center',
                                  verticalalignment='center',
                                  rotate=False,

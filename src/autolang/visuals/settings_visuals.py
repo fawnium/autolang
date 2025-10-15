@@ -12,7 +12,7 @@ DEFAULT_NETWORKX_LAYOUT = 'shell'
 
 # Parameters for styling diagram
 
-DEFAULT_NODE_SIZE = 300
+DEFAULT_NODE_SIZE = 700
 
 DEFAULT_EDGE_CONNECTION_STYLE = 'arc3'
 
@@ -22,8 +22,16 @@ DEFAULT_EDGE_WIDTH = 1.0
 
 DEFAULT_EDGE_ARROW_STYLE = None
 
-DEFAULT_EDGE_ARROW_SIZE = 10
+DEFAULT_EDGE_ARROW_SIZE = 15
 
 DEFAULT_NODE_FONT_SIZE = 12
 
 DEFAULT_EDGE_FONT_SIZE = 10
+
+# For formatting the text box of edge labels
+EDGE_LABEL_BBOX = {
+    'boxstyle': 'round,pad=0.1',
+    'fc': 'white',
+    'ec': 'black',
+    'alpha': 1.0,
+}
