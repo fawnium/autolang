@@ -1,9 +1,12 @@
 from autolang.backend.utils import words_to_length
 from autolang.backend.machines.structs_config import ConfigTM
 from autolang.backend.machines.structs_transition import TransitionTM
-from autolang.backend.machines.structs_transition import (DEFAULT_ACCEPT, DEFAULT_REJECT, 
-                                                          DEFAULT_BLANK, DEFAULT_LEFT, DEFAULT_RIGHT)
-from autolang.backend.machines.settings_machines import DEFAULT_LANGUAGE_LENGTH
+from autolang.backend.machines.settings_machines import (DEFAULT_LANGUAGE_LENGTH,
+                                                         DEFAULT_TM_ACCEPT, 
+                                                         DEFAULT_TM_REJECT, 
+                                                         DEFAULT_TM_BLANK, 
+                                                         DEFAULT_TM_LEFT, 
+                                                         DEFAULT_TM_RIGHT)
 
 from autolang.visuals.tm_visuals import _transition_table_tm
 
@@ -21,8 +24,8 @@ class TM:
     def __init__(self, 
                  transition: dict[tuple[str, str], tuple[str, str, str]], 
                  start: str, 
-                 accept: str = DEFAULT_ACCEPT, 
-                 reject: str = DEFAULT_REJECT, 
+                 accept: str = DEFAULT_TM_ACCEPT, 
+                 reject: str = DEFAULT_TM_REJECT, 
                  reserved_letters: Iterable[str] = set()):
         
         self.transition = TransitionTM(transition, accept, reject, reserved_letters) # Wrap transition function and check valid encoding, and ensure halting states are valid
@@ -50,12 +53,12 @@ class TM:
              direction: str) -> tuple[int, list[str]]:
         
         direction = direction.upper()
-        if direction == DEFAULT_LEFT:
+        if direction == DEFAULT_TM_LEFT:
             head = max(head - 1, 0) # Prevent moving past start cell
-        elif direction == DEFAULT_RIGHT:
+        elif direction == DEFAULT_TM_RIGHT:
             head += 1
             if head >= len(tape): # Pad tape if exploring new cells
-                tape += [DEFAULT_BLANK] * (head - len(tape) + 1)
+                tape += [DEFAULT_TM_BLANK] * (head - len(tape) + 1)
         else:
             raise ValueError(f'Unrecognised direction \'{direction}\' for TM.')
         return head, tape
@@ -68,7 +71,7 @@ class TM:
         state = config.state
         tape = config.tape
         head = config.head
-        letter = tape[head] if tape else DEFAULT_BLANK
+        letter = tape[head] if tape else DEFAULT_TM_BLANK
         # Update machine
         next_state, next_letter, direction = self.transition[(state, letter)]
         tape[head] = next_letter # Write current cell
@@ -85,12 +88,12 @@ class TM:
         - return: True = accept, False = reject, None = undecided (either likely undecidable or definitely undecidable)
         '''
         # Check input
-        if DEFAULT_BLANK in word:
-            raise ValueError(f'Letter \'{DEFAULT_BLANK}\' is reserved for tape use and cannot be used as input.')
+        if DEFAULT_TM_BLANK in word:
+            raise ValueError(f'Letter \'{DEFAULT_TM_BLANK}\' is reserved for tape use and cannot be used as input.')
         if not all(letter in self.input_alphabet for letter in word): # Reject if unrecognised symbols in input, TODO maybe raise error instead?
             return False
 
-        tape = [letter for letter in word] if word else [DEFAULT_BLANK] # Initialise tape
+        tape = [letter for letter in word] if word else [DEFAULT_TM_BLANK] # Initialise tape
         current = ConfigTM(self.start, tape, 0, None) # Current config, including state and tape data - initialise as start
         steps = 0 # Number of steps executed
         visited = set() # Track seen configs to detect infinite loops

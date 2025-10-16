@@ -1,3 +1,10 @@
+from autolang.backend.machines.settings_machines import (DEFAULT_TM_ACCEPT,
+                                                         DEFAULT_TM_REJECT,
+                                                         DEFAULT_TM_BLANK,
+                                                         DEFAULT_TM_LEFT,
+                                                         DEFAULT_TM_RIGHT,
+                                                         )
+
 from collections.abc import Iterable
 
 '''
@@ -29,13 +36,7 @@ def check_single_char(letter: str):
         raise ValueError(f'This version of autolang only supports single characters in alphabets, but \'{letter}\' is multiple.')
     return True
 
-# Default reserved names for TMs
-DEFAULT_ACCEPT = 'qa'
-DEFAULT_REJECT = 'qr'
-DEFAULT_BLANK = '_'
-DEFAULT_LEFT = 'L'
-DEFAULT_RIGHT = 'R'
-DEFAULT_NEUTRAL = 'N' # NOTE unused!
+
 
 class TransitionDFA:
     '''
@@ -293,7 +294,7 @@ class TransitionTM:
     '''
 
     def __init__(self, function: dict[tuple[str, str], tuple[str, str, str]], 
-                 accept: str = DEFAULT_ACCEPT, reject: str = DEFAULT_REJECT, reserved_letters: Iterable[str] = set()):
+                 accept: str = DEFAULT_TM_ACCEPT, reject: str = DEFAULT_TM_REJECT, reserved_letters: Iterable[str] = set()):
         # Check halting states are distinct from each other
         if accept == reject:
             raise ValueError(f'TM accept and reject states cannot be equal (both \'{accept}\').')
@@ -342,12 +343,12 @@ class TransitionTM:
         # Finish preparing returns
         states.update({self.accept, self.reject}) # Include halting states in list of states, regardless of whether they are in transition function
         states = tuple(sorted(states, key=lambda s: (len(s), s))) # Sort states in len-lex order, just in case
-        input_alphabet.discard(DEFAULT_BLANK) # Reserved blank letter cannot be used in input alphabet
+        input_alphabet.discard(DEFAULT_TM_BLANK) # Reserved blank letter cannot be used in input alphabet
         input_alphabet -= self.reserved_letters # Remove reserved tape letters from the input alphabet
         input_alphabet = tuple(sorted(input_alphabet))
         # Ensure reserved char '_' *does* appear in tape alphabet
-        if DEFAULT_BLANK not in tape_alphabet: # Triggers if '_' was not seen in any transition entry
-            raise ValueError(f'TM transition is missing transitions for blank letter \'{DEFAULT_BLANK}\'.')
+        if DEFAULT_TM_BLANK not in tape_alphabet: # Triggers if '_' was not seen in any transition entry
+            raise ValueError(f'TM transition is missing transitions for blank letter \'{DEFAULT_TM_BLANK}\'.')
         tape_alphabet = tuple(sorted(tape_alphabet))
         return states, input_alphabet, tape_alphabet
 
@@ -375,7 +376,7 @@ class TransitionTM:
                 raise TypeError(f'TM state \'{next_state}\' must be a string, not {type(next_state)}.')
             if not isinstance(write, str):
                 raise TypeError(f'TM letter \'{letter}\' must be a string, not {type(letter)}.')
-            if direction not in (DEFAULT_LEFT, DEFAULT_RIGHT):
+            if direction not in (DEFAULT_TM_LEFT, DEFAULT_TM_RIGHT):
                 raise TypeError(f'Unrecognised TM direction \'{direction}\'.')
         return True
 
