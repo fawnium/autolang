@@ -9,10 +9,11 @@ from autolang.backend.machines.settings_machines import (DEFAULT_LANGUAGE_LENGTH
                                                          DEFAULT_TM_RIGHT,
                                                          DEFAULT_TM_MAX_STEPS)
 
-from autolang.visuals.tm_visuals import _transition_table_tm
+from autolang.visuals.tm_visuals import _transition_table_tm, _get_tm_digraph
+from autolang.visuals.render_diagrams import render_digraph
+from autolang.visuals.display_diagrams import display_figure
 
 from collections.abc import Iterable, Generator
-
 
 
 class TM:
@@ -131,6 +132,21 @@ class TM:
         print(f'Transition table of {repr(self)}:')
         _transition_table_tm(self.transition)
 
-    # Transition diagram (WIP v0.2.0)
-    def transition_diagram(self):
-        raise NotImplementedError
+    # Create transition diagram of TM
+    # Either plots directly or saves
+    def transition_diagram(self, *,
+                           mode: str | None = None,
+                           filename: str | None = None,
+                           layout: str | None = None):
+        '''
+        - `mode`: either 'save' or 'show'
+            - auto-detected if None
+        - `filename`: name of saved image file if 'save' mode
+        - `layout`: nx layout algorithm used for plotting, e.g. 'shell'
+        '''
+        # Create nx digraph encoding DFA
+        digraph = _get_tm_digraph(self.transition, self.start, self.accept, self.reject)
+        # Create matplotlib figure that plots digraph
+        fig = render_digraph(digraph, layout)
+        # Show/save final diagram
+        display_figure(fig, mode, filename)

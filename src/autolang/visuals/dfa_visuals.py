@@ -1,5 +1,11 @@
 from autolang.backend.machines.structs_transition import TransitionDFA
 from autolang.visuals.magic_chars import V, H, UL, UR, DL, DR, UDL, UDR, ULR, DLR, UDLR
+from autolang.visuals.settings_visuals import DEFAULT_ACCEPT_COL, DEFAULT_REJECT_COL
+from autolang.visuals.utils_visuals import get_edge_label
+
+from collections.abc import Iterable
+
+import networkx as nx
 
 # Print formatted transition table of DFA
 # NOTE this function is only called by `DFA` object
@@ -38,4 +44,36 @@ def _transition_table_dfa(transition: TransitionDFA):
         print_filler_line()
         print_line(state)
     print_footer()
+
+
+def _get_dfa_digraph(transition: TransitionDFA, start: str, accept: Iterable[str]) -> nx.DiGraph:
+  
+    # Helper to determine node colour
+    def get_node_col(state: str, accept_col: str = DEFAULT_ACCEPT_COL, reject_col: str = DEFAULT_REJECT_COL) -> str:
+        return accept_col if state in accept else reject_col
+        
+    # Map (state, next_state) edges to respective label
+    # Collect letters together for edges between the same states
+    edge_label_map = {}
+    for (state, letter), next_state in transition.items():
+        if (state, next_state) in edge_label_map:
+            edge_label_map[(state, next_state)].append(letter)
+        else:
+            edge_label_map[(state, next_state)] = [letter]
+    # Convert labels from lists of letters to formatted strings
+    edge_label_map = {(state, next_state): get_edge_label(letters) for (state, next_state), letters in edge_label_map.items()}
     
+    # Create final digraph
+    digraph = nx.DiGraph()
+    # Add nodes
+    for state in transition.states:
+        digraph.add_node(state, color = get_node_col(state))
+    # Add edges
+    for (state, next_state), label in edge_label_map.items():
+        digraph.add_edge(state, next_state, label = label)
+    # Add metadata in case needed later
+    digraph.graph['start'] = start
+    digraph.graph['accept'] = tuple(accept)
+    digraph.graph['name'] = 'DFA with ' + str(len(transition.states)) + ' states and alphabet {' + ','.join(transition.alphabet) + '}'
+    digraph.graph['kind'] = 'DFA' 
+    return digraph

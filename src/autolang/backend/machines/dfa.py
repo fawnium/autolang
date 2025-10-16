@@ -2,7 +2,9 @@ from autolang.backend.utils import words_to_length
 from autolang.backend.machines.structs_transition import TransitionDFA
 from autolang.backend.machines.settings_machines import DEFAULT_LANGUAGE_LENGTH
 
-from autolang.visuals.dfa_visuals import _transition_table_dfa
+from autolang.visuals.dfa_visuals import _transition_table_dfa, _get_dfa_digraph
+from autolang.visuals.render_diagrams import render_digraph
+from autolang.visuals.display_diagrams import display_figure
 
 from collections.abc import Iterable, Generator
 
@@ -59,6 +61,22 @@ class DFA:
         print(f'Transition table of {repr(self)}:')
         _transition_table_dfa(self.transition)
 
-    # Transition diagram (WIP v0.2.0)
-    def transition_diagram(self):
-        raise NotImplementedError
+    # Create transition diagram of DFA
+    # Either plots directly or saves
+    def transition_diagram(self, *,
+                           mode: str | None = None,
+                           filename: str | None = None,
+                           layout: str | None = None):
+        '''
+        - `mode`: either 'save' or 'show'
+            - auto-detected if None
+        - `filename`: name of saved image file if 'save' mode
+        - `layout`: nx layout algorithm used for plotting, e.g. 'shell'
+        '''
+        # Create nx digraph encoding DFA
+        digraph = _get_dfa_digraph(self.transition, self.start, self.accept)
+        # Create matplotlib figure that plots digraph
+        fig = render_digraph(digraph, layout)
+        # Show/save final diagram
+        display_figure(fig, mode, filename)
+

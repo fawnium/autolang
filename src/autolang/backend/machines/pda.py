@@ -3,7 +3,9 @@ from autolang.backend.machines.structs_config import ConfigPDA
 from autolang.backend.machines.structs_transition import TransitionPDA
 from autolang.backend.machines.settings_machines import DEFAULT_LANGUAGE_LENGTH
 
-from autolang.visuals.pda_visuals import _transition_table_pda
+from autolang.visuals.pda_visuals import _transition_table_pda, _get_pda_digraph
+from autolang.visuals.render_diagrams import render_digraph
+from autolang.visuals.display_diagrams import display_figure
 
 from collections.abc import Iterable, Generator
 
@@ -106,6 +108,21 @@ class PDA:
         print(f'Transition table of {repr(self)}:')
         _transition_table_pda(self.transition)
 
-    # Transition diagram (WIP v0.2.0)
-    def transition_diagram(self):
-        raise NotImplementedError
+    # Create transition diagram of PDA
+    # Either plots directly or saves
+    def transition_diagram(self, *,
+                           mode: str | None = None,
+                           filename: str | None = None,
+                           layout: str | None = None):
+        '''
+        - `mode`: either 'save' or 'show'
+            - auto-detected if None
+        - `filename`: name of saved image file if 'save' mode
+        - `layout`: nx layout algorithm used for plotting, e.g. 'shell'
+        '''
+        # Create nx digraph encoding PDA
+        digraph = _get_pda_digraph(self.transition, self.start, self.accept)
+        # Create matplotlib figure that plots digraph
+        fig = render_digraph(digraph, layout)
+        # Show/save final diagram
+        display_figure(fig, mode, filename)
