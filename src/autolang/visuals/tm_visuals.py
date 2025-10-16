@@ -1,4 +1,4 @@
-from autolang.backend.machines.structs_transition import TransitionTM, DEFAULT_BLANK, DEFAULT_LEFT, DEFAULT_RIGHT
+from autolang.backend.machines.structs_transition import TransitionTM
 from autolang.visuals.magic_chars import V, H, UL, UR, DL, DR, UDL, UDR, ULR, DLR, UDLR, EPSILON, EMPTY
 
 # Helper to format table entries
