@@ -6,14 +6,14 @@ from autolang.backend.machines.settings_machines import (DEFAULT_LANGUAGE_LENGTH
                                                          DEFAULT_TM_REJECT, 
                                                          DEFAULT_TM_BLANK, 
                                                          DEFAULT_TM_LEFT, 
-                                                         DEFAULT_TM_RIGHT)
+                                                         DEFAULT_TM_RIGHT,
+                                                         DEFAULT_TM_MAX_STEPS)
 
 from autolang.visuals.tm_visuals import _transition_table_tm
 
 from collections.abc import Iterable, Generator
 
-# Arbitrary limit to computation steps in case of non-halting with no infinite loops detected
-DEFAULT_MAX_STEPS = int(1e8) # Default 100 million
+
 
 class TM:
 
@@ -38,7 +38,7 @@ class TM:
         if start not in self.states:
             raise ValueError(f'TM start state \'{start}\' must be included in list of states.')
         self.start = start
-        self.MAX_STEPS = DEFAULT_MAX_STEPS # Compute-step limit to catch undetected infinite loops
+        self.MAX_STEPS = DEFAULT_TM_MAX_STEPS # Compute-step limit to catch undetected infinite loops
 
     # Represent TM in text
     def __repr__(self):

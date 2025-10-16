@@ -11,3 +11,6 @@ DEFAULT_TM_BLANK = '_'
 DEFAULT_TM_LEFT = 'L'
 DEFAULT_TM_RIGHT = 'R'
 DEFAULT_TM_NEUTRAL = 'N' # NOTE unused
+
+# Arbitrary limit to computation steps in case of non-halting with no infinite loops detected
+DEFAULT_TM_MAX_STEPS = int(1e8) # Default 100 million
