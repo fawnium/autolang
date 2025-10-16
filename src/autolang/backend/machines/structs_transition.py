@@ -3,7 +3,7 @@ from autolang.backend.machines.settings_machines import (DEFAULT_TM_ACCEPT,
                                                          DEFAULT_TM_BLANK,
                                                          DEFAULT_TM_LEFT,
                                                          DEFAULT_TM_RIGHT,
-                                                         )
+                                                         FORBIDDEN_CHARS)
 
 from collections.abc import Iterable
 
@@ -16,11 +16,7 @@ Wrapper classes for transition function dicts
 - not responsible for actually simulating automata, that is handled in the respective file e.g. dfa.py
 '''
 
-# Chars that cannot appear as an alphabet letter and inside state names
-# Forbids some letters that probably would be ok to include, just in case
-# NOTE does not apply to Turing machines
-# TODO(?) do this more cleverly instead of just a brute force ban, e.g. escape chars?
-FORBIDDEN_CHARS = '.+* _'
+
 # Helper to check forbidden chars
 def check_forbidden(obj):
     if not obj: return True
