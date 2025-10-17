@@ -61,6 +61,7 @@ def can_call_plt_show() -> bool:
     return False # May have false negatives
     
 # Generate default filename for image if none given
+# TODO change default filename ? should include automaton model at least
 def get_filename(kind: str = '') -> str:
     # Default to just naming by the current time as 'HH_MM_SS'
         time_str = datetime.now().strftime("%H_%M_%S")

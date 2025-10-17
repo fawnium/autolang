@@ -112,7 +112,7 @@ def render_digraph(digraph: nx.DiGraph,
                             labels=None,
                             font_size=node_font_size,
                             font_color='k',
-                            font_weight=node_font_weights, # Could use for start state?
+                            font_weight=node_font_weights, # Embolden start state
                             font_family='sans-serif',
                             
                             alpha=None,
