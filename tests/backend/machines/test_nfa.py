@@ -57,6 +57,18 @@ class TestNFA(unittest.TestCase):
     def test_invalid_accept(self):
         with self.assertRaises(ValueError):
             nfa = NFA(self.tran, self.start, ['qx'])
+        with self.assertRaises(ValueError):
+            nfa = NFA(self.tran, self.start, 'qx') # Not wrapped in container
+
+    def test_next_states(self):
+        pass
+
+    def test_transition_table(self):
+        pass
+
+    def test_transition_diagram(self):
+        pass
+
 
 
 if __name__ == '__main__':
