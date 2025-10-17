@@ -60,6 +60,9 @@ class TestRegexToNFA(unittest.TestCase):
         nfa = regex_to_nfa('a*(b+c)*')
         self.assertEqual(set(nfa.L(4)), set(words_to_length_from_regex(4, ['a', 'b', 'c'], 'a*(b+c)*')))
 
+    def test_invalid_input(self):
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()

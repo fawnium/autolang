@@ -10,6 +10,8 @@ class TestConstructDFA(unittest.TestCase):
     names.
     Basically, it is hard to isolate the behaviour from the rest of the files in the project I think.
     It will certainly be possible but there is not enough time right now.
+
+    NOTE the machines produced via this class passed the later regex tests, so I think it's ok.
     '''
 
     pass # TODO
