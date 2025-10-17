@@ -48,9 +48,17 @@ class TestPDA(unittest.TestCase):
     def test_invalid_accept(self):
         with self.assertRaises(ValueError):
             pda = PDA(self.tran, self.start, ['q1', 'qx'])
+        with self.assertRaises(ValueError):
+            pda = PDA(self.tran, self.start, 'q1') # Not wrapped in container
 
     def test_next_configs(self):
         pass # TODO later
+
+    def test_transition_table(self):
+        pass
+
+    def test_transition_diagram(self):
+        pass
 
 
 if __name__ == '__main__':
