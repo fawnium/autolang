@@ -80,6 +80,12 @@ class TestTM(unittest.TestCase):
     def test_next_config(self):
         pass # TODO later
 
+    def test_transition_table(self):
+        pass
+
+    def test_transition_diagram(self):
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()
