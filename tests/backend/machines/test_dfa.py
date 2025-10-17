@@ -53,6 +53,8 @@ class TestDFA(unittest.TestCase):
     def test_invalid_accept(self):
         with self.assertRaises(ValueError):
             dfa = DFA(self.tran, self.start, ['qx'])
+        with self.assertRaises(ValueError):
+            dfa = DFA(self.tran, self.start, 'qx') # Not wrapped in container
 
 
 if __name__ == '__main__':
