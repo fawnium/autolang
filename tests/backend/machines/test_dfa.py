@@ -56,6 +56,12 @@ class TestDFA(unittest.TestCase):
         with self.assertRaises(ValueError):
             dfa = DFA(self.tran, self.start, 'qx') # Not wrapped in container
 
+    def test_transition_table(self):
+        pass
+
+    def test_transition_diagram(self):
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()
