@@ -1,6 +1,7 @@
 from autolang.visuals.settings_visuals import MAX_LABEL_LENGTH
-from autolang.visuals.magic_chars import EPSILON, RIGHT_ARROW
-from collections.abc import Iterable
+from autolang.visuals.magic_chars import EPSILON, RIGHT_ARROW, ELLIPSIS
+
+from collections.abc import Iterable, Sequence
 
 # Convert '' to literal 'ε' for display
 def eps(s: str) -> str:
@@ -8,20 +9,34 @@ def eps(s: str) -> str:
 
 # Helper to generate edge labels
 # For NFAs and DFAs
-def get_edge_label(letters: Iterable[str], max_length = MAX_LABEL_LENGTH) -> str:
+def get_edge_label(letters: Sequence[str], max_length = MAX_LABEL_LENGTH) -> str:
+    '''
+    - `letters`: collection of letters to format into label, e.g. ['a','b','c'] -> 'a,b,c'
+        - assumed to have no repeats
+        - can include empty string
+    - `max_length`: longest total length (in characters) before abbreviating label
+    '''
     letters = sorted(letters) # Sort letters
     letters = [eps(letter) for letter in letters] # Convert '' to literal epsilon if present
     # Total length is sum of lengths of letters plus number of commas added
+    # NOTE letters should all have length 1, so this is more for future-proofing
     length = sum(len(letter) for letter in letters) + (len(letters) - 1)
     # Join all letters by commas if total length short enough
     if length <= max_length:
         return ','.join(letters)
     # Only join some if total too long
     else:
-        # TODO handle edge case where only one letter?
-        # TODO not just start and end, but as many as possible while still under max length?
-        return letters[0] + ',...,' + letters[-1]
+        # Edge case for one letter
+        if len(letters) == 1:
+            # NOTE this block will only happen if a single 'letter' exceeds max length
+            # This is very rare, and currently will never happen since all are length 1
+            return letters[0]
+        else:
+            # Only include first and last, e.g. 'a,…,b'
+            # NOTE probably smarter way to do this
+            return letters[0] + ',' + ELLIPSIS + ',' + letters[-1]
     
+
 # Get edge labels for PDA edge
 def get_edge_label_pda(items: Iterable[tuple[str, str, str]], max_length = MAX_LABEL_LENGTH) -> str:
     '''
