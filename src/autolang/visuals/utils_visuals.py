@@ -9,15 +9,22 @@ def eps(s: str) -> str:
 
 # Helper to generate edge labels
 # For NFAs and DFAs
-def get_edge_label(letters: Sequence[str], max_length = MAX_LABEL_LENGTH) -> str:
+def get_edge_label(letters: Sequence[str], 
+                   max_length = MAX_LABEL_LENGTH) -> str:
     '''
     - `letters`: collection of letters to format into label, e.g. ['a','b','c'] -> 'a,b,c'
         - assumed to have no repeats
         - can include empty string
     - `max_length`: longest total length (in characters) before abbreviating label
     '''
-    letters = sorted(letters) # Sort letters
+    # Single string should not be passed directly
+    # e.g. should 'abc' be interpreted as one letter of length 3, or 3 letters of length 1?
+    if isinstance(letters, str):
+        raise TypeError(f'Literal string \'{letters}\' must be wrapped in container.')
+
+    letters = sorted(letters) # Ensure consistent order in label
     letters = [eps(letter) for letter in letters] # Convert '' to literal epsilon if present
+    
     # Total length is sum of lengths of letters plus number of commas added
     # NOTE letters should all have length 1, so this is more for future-proofing
     length = sum(len(letter) for letter in letters) + (len(letters) - 1)
