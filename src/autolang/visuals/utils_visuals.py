@@ -10,7 +10,7 @@ def eps(s: str) -> str:
 # Helper to generate edge labels
 # For NFAs and DFAs
 def get_edge_label(letters: Sequence[str], 
-                   max_length = MAX_LABEL_LENGTH) -> str:
+                   max_length: int = MAX_LABEL_LENGTH) -> str:
     '''
     - `letters`: collection of letters to format into label, e.g. ['a','b','c'] -> 'a,b,c'
         - assumed to have no repeats
@@ -40,30 +40,43 @@ def get_edge_label(letters: Sequence[str],
             return letters[0]
         else:
             # Only include first and last, e.g. 'a,…,b'
-            # NOTE probably smarter way to do this
+            # TODO probably smarter way to do this
             return letters[0] + ',' + ELLIPSIS + ',' + letters[-1]
     
 
 # Get edge labels for PDA edge
-def get_edge_label_pda(items: Iterable[tuple[str, str, str]], max_length = MAX_LABEL_LENGTH) -> str:
+def get_edge_label_pda(items: Sequence[tuple[str, str, str]], 
+                       max_length: int = MAX_LABEL_LENGTH,
+                       max_height: int = 3) -> str:
     '''
-    - each `item` is (letter, stack_top, stack_push)
-    - items get encoded as 'letter,stack_top->stack_push'
-    - if multiple items, they are joined by newlines in accordance with Sipser
+    - `items`: collection of triples (state, letter, stack_push) to format into single label
+        - each triple encoded as 'state,letter→stack_push'
+        - different triples in same label display on different lines, via '\n`
+    - `max_length`: longest allowed length (or width) of label (NOTE unused)
+    - `max_height`: most number of lines (i.e. most number of triples) displayed in label
+        - if too many items for single label, only display first and last separated by ellipses
+        - e.g 'a,$→a\n…\na,a→$'
     '''
-    items = sorted(items, key = lambda triple: triple[0]) # Sort only by 'letter'
-    # Format items
+    # Check items are formatted correctly
+    if not all(isinstance(item, tuple) for item in items):
+        raise ValueError(f'All PDA label items must be tuples.')
+
+    # Sort by priority: letter > stack top > stack push
+    items = sorted(items, key = lambda triple: (triple[0], triple[1], triple[2]))
+    # Format all individual items
     items = [(eps(letter) + ',' + eps(stack_top) + RIGHT_ARROW + eps(stack_push)) for (letter, stack_top, stack_push) in items]
-    # TODO handle long length - length must be different to above case I think
-    length = 0 # Placeholder
-    if length <= max_length:
+
+    if len(items) <= max_height:
         return '\n'.join(items)
     else:
-        pass
-
+        # NOTE there must be more than one item if this block executes
+        # so items[0] and items[-1] won't be the same
+        return items[0] + '\n' + ELLIPSIS + '\n' + items[1]
+        
 
 # Get edge labels for TM edge
-def get_edge_label_tm(items: Iterable[tuple[str, str, str]], max_length = MAX_LABEL_LENGTH) -> str:
+def get_edge_label_tm(items: Iterable[tuple[str, str, str]], 
+                      max_length = MAX_LABEL_LENGTH) -> str:
     '''
     - each `item` is (letter, write, direction)
     - items get encoded as 'letter->write,direction'
