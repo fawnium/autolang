@@ -24,7 +24,7 @@ TODO.txt
 
 # Test files
 main.py
-setup_automata.py
+#setup_automata.py
 
 # Transition diagram tests
 images/
