@@ -45,7 +45,7 @@ def get_edge_label(letters: Sequence[str],
     
 
 # Get edge labels for PDA edge
-def get_edge_label_pda(items: Sequence[tuple[str, str, str]], 
+def get_edge_label_pda(items: Sequence[tuple[str, str, str]], *,
                        max_length: int = MAX_LABEL_LENGTH,
                        max_height: int = 3) -> str:
     '''
@@ -79,25 +79,40 @@ def get_edge_label_pda(items: Sequence[tuple[str, str, str]],
         
 
 # Get edge labels for TM edge
-def get_edge_label_tm(items: Iterable[tuple[str, str, str]], 
-                      max_length = MAX_LABEL_LENGTH) -> str:
+def get_edge_label_tm(items: Sequence[tuple[str, str, str]], *, 
+                      max_length: int = MAX_LABEL_LENGTH,
+                      max_height: int = 3) -> str:
     '''
-    - each `item` is (letter, write, direction)
-    - items get encoded as 'letter->write,direction'
-        - if write is same as letter, it's just 'letter->direction'
-    - if multiple items, they are joined by newlines in accordance with Sipser
+    - `items`: collection of triples of the form (letter, write, direction)
+        - encoded as 'letter→write,direction', or just `letter→direction` if letter == write
+        - if multiple items, they are joined by newlines
+    - `max_length`: longest allowed length/width of label (NOTE unused)
+    - `max_height`: most number of lines displayed in triple
+        - if too many items, only display first and last separated by ellipses
+        - e.g. 'a→x,R\n…\na→x,R'
     '''
+    # Check items formatted correctly
+    if not all(isinstance(item, tuple) for item in items):
+        raise TypeError(f'All TM label items must be tuples.')
+    if not all(len(item) == 3 for item in items):
+        raise TypeError(f'All TM label items must have length 3')
+    if not all(isinstance(symbol, str) for item in items for symbol in item):
+        raise TypeError(f'All TM label symbols must be strings.')
+
     # Helper to format single item
     def format_item(item: tuple[str, str, str]) -> str:
         if item[0] == item[1]:
             return item[0] + RIGHT_ARROW + item[2]
         return item[0] + RIGHT_ARROW + item[1] + ',' + item[2]
-    items = sorted(items, key = lambda triple: triple[0]) # Sort only by 'letter'
-    # Format items
+    
+    # Sort by priority: letter > write. direction not used
+    items = sorted(items, key = lambda triple: (triple[0], triple[1]))
+    # Format all individual items
     items = [format_item(item) for item in items]
-    # TODO handle long length
-    length = 0 # Placeholder
-    if length <= max_length:
+    
+    if len(items) <= max_height:
         return '\n'.join(items)
     else:
-        pass
+        # NOTE there must be more than one item if this block executes
+        # so items[0] and items[-1] won't be the same
+        return items[0] + '\n' + ELLIPSIS + '\n' + items[-1]
