@@ -2,11 +2,22 @@ import unittest
 from autolang.visuals.nfa_visuals import (next_states_to_str,
                                           _transition_table_nfa,
                                           _get_nfa_digraph)
+from autolang.visuals.magic_chars import EMPTY
 from setup_automata import nfa1
 
 class TestNextStatesToStr(unittest.TestCase):
     
-    pass
+    def test_empty(self):
+        self.assertEqual(next_states_to_str(tuple()), EMPTY)
+
+    def test_single_state(self):
+        self.assertEqual(next_states_to_str(('q0',)), '{q0}')
+
+    def test_multiple_states(self):
+        self.assertEqual(next_states_to_str(('q0', 'q1')), '{q0,q1}')
+
+    def test_sorted(self):
+        self.assertEqual(next_states_to_str(('q1', 'q0')), '{q0,q1}')
 
 
 class TestTransitionTableNFA(unittest.TestCase):

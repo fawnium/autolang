@@ -7,7 +7,11 @@ from setup_automata import tm1
 
 class TestNextConfigToStr(unittest.TestCase):
 
-    pass
+    def test_halting_state(self):
+        self.assertEqual(next_config_to_str(('qa','x','R'), ('qa','qr')), 'qa')
+
+    def test_normal_state(self):
+        self.assertEqual(next_config_to_str(('q0','x','R'), ('qa','qr')), '(q0,x,R)')
 
 
 class TestTransitionTableTM(unittest.TestCase):

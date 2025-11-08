@@ -3,17 +3,33 @@ from autolang.visuals.pda_visuals import (config_to_str,
                                           next_configs_to_str,
                                           _transition_table_pda,
                                           _get_pda_digraph)
+from autolang.visuals.magic_chars import EPSILON
 from setup_automata import pda1
 
 class TestConfigToStr(unittest.TestCase):
 
-    pass
+    def test_epsilon(self):
+        self.assertEqual(config_to_str(('q0','')), '(q0,' + EPSILON + ')')
+
+    def test_letter(self):
+        self.assertEqual(config_to_str(('q0','a')), '(q0,a)')
 
 
 class TestNextConfigsToStr(unittest.TestCase):
 
-    pass
+    def test_empty(self):
+        self.assertEqual(next_configs_to_str(tuple()), ' ')
 
+    def test_single_config(self):
+        self.assertEqual(next_configs_to_str((('q0','a'),)), '{(q0,a)}')
+
+    def test_multiple_configs(self):
+        configs = (('q0','a'), ('q1','b'))
+        self.assertEqual(next_configs_to_str(configs), '{(q0,a),(q1,b)}')
+
+    def test_sorted(self):
+        configs = (('q1','b'), ('q1','a'), ('q11', 'a'), ('q0','b'), ('q0','a'))
+        self.assertEqual(next_configs_to_str(configs), '{(q0,a),(q0,b),(q1,a),(q1,b),(q11,a)}')
 
 class TestTransitionTablePDA(unittest.TestCase):
     '''

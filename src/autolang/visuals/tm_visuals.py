@@ -9,6 +9,10 @@ import networkx as nx
 
 # Helper to format table entries
 def next_config_to_str(config: tuple[str, str, str], halting: tuple[str, str]) -> str:
+    '''
+    - `config`: of the form (letter, write, direction)
+    - `halting`: pair of accept and reject states, for formatting edge case
+    '''
     # Case for entering halting state - no need for write or direction
     if config[0] in halting: return config[0]
     # Normal case

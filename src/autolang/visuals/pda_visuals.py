@@ -17,7 +17,9 @@ def config_to_str(config: tuple[str, str]) -> str:
 # NOTE only for transition table, not transition diagram
 def next_configs_to_str(configs: tuple[tuple[str, str], ...]) -> str:
     if not configs: return ' ' # Case where no next configs # NOTE should we do ' ' or EMPTY for readability?
-    configs = sorted(configs, key=lambda conf: (len(conf[0]), conf[0], conf[1])) # Sort list of configs with priority: length of state > lex of state > lex of letter
+    
+    # Sort list of configs with priority: length of state > lex of state > lex of letter
+    configs = sorted(configs, key=lambda conf: (len(conf[0]), conf[0], conf[1]))
     return '{' + ','.join(config_to_str(config) for config in configs) + '}'
 
 # Generate string for formatted transition table of PDA
