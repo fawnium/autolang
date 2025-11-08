@@ -15,7 +15,7 @@ def next_config_to_str(config: tuple[str, str, str], halting: tuple[str, str]) -
     return '(' + config[0] + ',' + config[1] + ',' + config[2] + ')'
 
 
-# Print formatted transition table of TM
+# Generate string for formatted transition table of TM
 # NOTE this function is only called by `TM` object
 # NOTE all args are assumed valid and no input handling occurs here
 def _transition_table_tm(transition: TransitionTM):
@@ -23,36 +23,47 @@ def _transition_table_tm(transition: TransitionTM):
     states = transition.states
     tape_alphabet = transition.tape_alphabet
     halting = (transition.accept, transition.reject)
+
     # Find widest table entry and number of non-header columns
     width = max([len(next_config_to_str(config, halting)) for config in transition.values()]) # Max width of cell in table for setting col width
     num = len(tape_alphabet) # Number of non-header cols
+
     # Helper to pad cells with whitespace
     def cell(s: str) -> str:
         return s + (' ' * (width - len(s)))
-    # Print top border and header line of letters
-    def print_header():
-        print(DR + (H * width) + (num * (DLR + (H * width))) + DL)
-        print(V + (width * ' ') + V + V.join(cell(letter) for letter in tape_alphabet) + V)
-    # Print bottom border
-    def print_footer():
-        print(UR + (H * width) + (num * (ULR + (H * width))) + UL)
-    # Print row of entries in table
-    def print_line(state: str):
+    
+    # Generate top border and header line of letters
+    def header() -> str:
+        top_border_line = DR + (H * width) + (num * (DLR + (H * width))) + DL
+        header_line = V + (width * ' ') + V + V.join(cell(letter) for letter in tape_alphabet) + V
+        return top_border_line + '\n' + header_line + '\n'
+
+    # Generate bottom border
+    def footer() -> str:
+        footer_line = UR + (H * width) + (num * (ULR + (H * width))) + UL
+        return footer_line + '\n'
+
+    # Generate row of entries in table
+    def line(state: str) -> str:
         line = V + cell(state) # State header cell
         for letter in tape_alphabet: # Add value cells
             next_config = transition.get((state, letter))
             line += V + cell(next_config_to_str(next_config, halting))
         line += V
-        print(line)
-    # Print line between table rows
-    def print_filler_line(): 
-        print(UDR + (H * width) + (num * (UDLR + (H * width))) + UDL)
-    # Print formatted transition table
-    print_header()
+        return line + '\n'
+
+    # Generate line between table rows
+    def filler_line() -> str: 
+        filler_line = UDR + (H * width) + (num * (UDLR + (H * width))) + UDL
+        return filler_line + '\n'
+
+    # Generate complete formatted transition table
+    table = ''
+    table += header()
     for state in (state for state in states if state not in halting): # Omit rows for halting states
-        print_filler_line()
-        print_line(state)
-    print_footer()
+        table += filler_line() + line(state)
+    table += footer()
+    return table
 
 
 def _get_tm_digraph(transition: TransitionTM, 
