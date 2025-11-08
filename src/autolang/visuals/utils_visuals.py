@@ -59,7 +59,11 @@ def get_edge_label_pda(items: Sequence[tuple[str, str, str]],
     '''
     # Check items are formatted correctly
     if not all(isinstance(item, tuple) for item in items):
-        raise ValueError(f'All PDA label items must be tuples.')
+        raise TypeError(f'All PDA label items must be tuples.')
+    if not all(len(item) == 3 for item in items):
+        raise TypeError(f'All PDA label items must have length 3')
+    if not all(isinstance(symbol, str) for item in items for symbol in item):
+        raise TypeError(f'All PDA label symbols must be strings.')
 
     # Sort by priority: letter > stack top > stack push
     items = sorted(items, key = lambda triple: (triple[0], triple[1], triple[2]))
@@ -71,7 +75,7 @@ def get_edge_label_pda(items: Sequence[tuple[str, str, str]],
     else:
         # NOTE there must be more than one item if this block executes
         # so items[0] and items[-1] won't be the same
-        return items[0] + '\n' + ELLIPSIS + '\n' + items[1]
+        return items[0] + '\n' + ELLIPSIS + '\n' + items[-1]
         
 
 # Get edge labels for TM edge
