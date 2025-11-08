@@ -10,40 +10,51 @@ import networkx as nx
 # Print formatted transition table of DFA
 # NOTE this function is only called by `DFA` object
 # NOTE all args are assumed valid and no input handling occurs here
-def _transition_table_dfa(transition: TransitionDFA):
+def _transition_table_dfa(transition: TransitionDFA) -> str:
     # Unpack states and alphabet
     states = transition.states
     alphabet = transition.alphabet
+
     # Find widest table entry and number of non-header columns
     width = max(len(state) for state in states) # Longest name of state for setting column width
     num = len(alphabet)
+
     # Helper to pad cells with whitespace
     def cell(s: str) -> str:
         return s + (' ' * (width - len(s)))
-    # Print top border and header line of letters
-    def print_header():
-        print(DR + (H * width) + (num * (DLR + (H * width))) + DL)
-        print(V + (width * ' ') + V + V.join(cell(letter) for letter in alphabet) + V)
-    # Print bottom border
-    def print_footer():
-        print(UR + (H * width) + (num * (ULR + (H * width))) + UL)
-    # Print row of entries in table
-    def print_line(state: str):
+    
+    # Generate top border and header line of letters
+    def header():
+        top_border_line = DR + (H * width) + (num * (DLR + (H * width))) + DL
+        header_line = V + (width * ' ') + V + V.join(cell(letter) for letter in alphabet) + V
+        return top_border_line + '\n' + header_line + '\n'
+    
+    # Generate bottom border
+    def footer():
+        bottom_border_line = UR + (H * width) + (num * (ULR + (H * width))) + UL
+        return bottom_border_line + '\n'
+    
+    # Generate row of entries in table
+    def line(state: str):
         line = V + cell(state) # State header cell
         for letter in alphabet: # Add value cells
             next_state = transition.get((state, letter))
             line += V + cell(next_state)
         line += V
-        print(line)
-    # Print line between table rows
-    def print_filler_line(): 
-        print(UDR + (H * width) + (num * (UDLR + (H * width))) + UDL)
-    # Print formatted transition table
-    print_header()
+        return line + '\n'
+
+    # Generate line between table rows
+    def filler_line(): 
+        filler_line = UDR + (H * width) + (num * (UDLR + (H * width))) + UDL
+        return filler_line + '\n'
+    
+    # Generate complete transition table
+    table = ''
+    table += header()
     for state in states:
-        print_filler_line()
-        print_line(state)
-    print_footer()
+        table += filler_line() + line(state)
+    table += footer()
+    return table
 
 
 def _get_dfa_digraph(transition: TransitionDFA, 
