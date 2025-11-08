@@ -47,7 +47,7 @@ class TestGetEdgeLabelPDA(unittest.TestCase):
 
     def test_multiple_items(self):
         items = [('a','a','a'), ('a','b','c')]
-        self.assertEqual(get_edge_label_pda(items), 'a,a' + RIGHT_ARROW + 'a\n' + 'a,b' + RIGHT_ARROW + 'c')
+        self.assertEqual(get_edge_label_pda(items), 'a,a' + RIGHT_ARROW + 'a\na,b' + RIGHT_ARROW + 'c')
 
     def test_abbreviate(self):
         items = [('a','a','a'), ('a','b','b'), ('a','c','c'),('a','d','d')]
@@ -63,4 +63,22 @@ class TestGetEdgeLabelPDA(unittest.TestCase):
 
 class TestGetEdgeLabelTM(unittest.TestCase):
 
-    pass
+    def test_single_item(self):
+        self.assertEqual(get_edge_label_tm([('a','b','R')]), 'a' + RIGHT_ARROW + 'b,R')
+        self.assertEqual(get_edge_label_tm([('a','a','R')]), 'a' + RIGHT_ARROW + 'R') # Letter not changed
+
+    def test_multiple_items(self):
+        items = [('a','x','R'), ('b','x','R')]
+        self.assertEqual(get_edge_label_tm(items), 'a' + RIGHT_ARROW + 'x,R\nb' + RIGHT_ARROW + 'x,R')
+
+    def test_abbreviate(self):
+        items = [('a','x','R'), ('b','x','R'), ('c','x','R'), ('d','x','R')]
+        self.assertEqual(get_edge_label_tm(items), 'a' + RIGHT_ARROW + 'x,R\n' + ELLIPSIS + '\nd' + RIGHT_ARROW + 'x,R')
+    
+    def test_invalid_raises_type_error(self):
+        with self.assertRaises(TypeError):
+            get_edge_label_pda(('a','b','R')) # Tuple not nested
+        with self.assertRaises(TypeError):
+            get_edge_label_pda([('a','R')]) # Tuple wrong length
+        with self.assertRaises(TypeError):
+            get_edge_label_pda([(1,'b','R')]) # Symbol is int, should be str
