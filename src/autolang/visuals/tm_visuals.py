@@ -58,7 +58,15 @@ def _transition_table_tm(transition: TransitionTM):
 def _get_tm_digraph(transition: TransitionTM, 
                     start: str, 
                     accept: str, 
-                    reject: str) -> nx.DiGraph:
+                    reject: str,
+                    filename: str | None = None) -> nx.DiGraph:
+    '''
+    - `transition`: transition object for TM
+    - `start`: start state of TM, NOTE must be included in `transition` states (not checked)
+    - `accept`: accept state of TM, NOTE must all be included in `transition` states (not checked)
+    - `reject`: reject state of TM, NOTE must all be included in `transition` states (not checked)
+    - `filename` (optional): name to be used to save image later if specified
+    '''
 
     # Helper to get node colours
     # NOTE different to other models, due to unique reject state
@@ -93,6 +101,7 @@ def _get_tm_digraph(transition: TransitionTM,
     digraph.graph['start'] = start
     digraph.graph['accept'] = accept
     digraph.graph['reject'] = reject
-    digraph.graph['name'] = 'TM with ' + str(len(transition.states)) + ' states and input alphabet {' + ','.join(transition.input_alphabet) + '}'
+    digraph.graph['title'] = 'TM with ' + str(len(transition.states)) + ' states and input alphabet {' + ','.join(transition.input_alphabet) + '}'
     digraph.graph['kind'] = 'TM'
+    digraph.graph['filename'] = filename
     return digraph

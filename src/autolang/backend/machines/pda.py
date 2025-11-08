@@ -121,8 +121,8 @@ class PDA:
         - `layout`: nx layout algorithm used for plotting, e.g. 'shell'
         '''
         # Create nx digraph encoding PDA
-        digraph = _get_pda_digraph(self.transition, self.start, self.accept)
+        digraph = _get_pda_digraph(self.transition, self.start, self.accept, filename)
         # Create matplotlib figure that plots digraph
         fig = render_digraph(digraph, layout)
         # Show/save final diagram
-        display_figure(fig, mode, filename)
+        display_figure(fig, mode, filename, kind='PDA')

@@ -51,7 +51,16 @@ def _transition_table_nfa(transition: TransitionNFA):
     print_footer()
 
 
-def _get_nfa_digraph(transition: TransitionNFA, start: str, accept: Iterable[str]) -> nx.DiGraph:
+def _get_nfa_digraph(transition: TransitionNFA, 
+                     start: str, 
+                     accept: Iterable[str],
+                     filename: str | None = None) -> nx.DiGraph:
+    '''
+    - `transition`: transition object for NFA
+    - `start`: start state of NFA, NOTE must be included in `transition` states (not checked)
+    - `accept`: collection of NFA accept states, NOTE must all be included in `transition` states (not checked)
+    - `filename` (optional): name to be used to save image later if specified
+    '''
 
     # Helper to determine node colour
     def get_node_col(state: str, accept_col: str = DEFAULT_ACCEPT_COL, reject_col: str = DEFAULT_REJECT_COL) -> str:
@@ -80,7 +89,8 @@ def _get_nfa_digraph(transition: TransitionNFA, start: str, accept: Iterable[str
     # Add metadata
     digraph.graph['start'] = start
     digraph.graph['accept'] = tuple(accept)
-    digraph.graph['name'] = 'NFA with ' + str(len(transition.states)) + ' states and alphabet {' + ','.join(transition.alphabet) + '}'
+    digraph.graph['title'] = 'NFA with ' + str(len(transition.states)) + ' states and alphabet {' + ','.join(transition.alphabet) + '}'
     digraph.graph['kind'] = 'NFA'
+    digraph.graph['filename'] = filename
     return digraph
 

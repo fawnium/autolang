@@ -145,8 +145,8 @@ class TM:
         - `layout`: nx layout algorithm used for plotting, e.g. 'shell'
         '''
         # Create nx digraph encoding DFA
-        digraph = _get_tm_digraph(self.transition, self.start, self.accept, self.reject)
+        digraph = _get_tm_digraph(self.transition, self.start, self.accept, self.reject, filename)
         # Create matplotlib figure that plots digraph
         fig = render_digraph(digraph, layout)
         # Show/save final diagram
-        display_figure(fig, mode, filename)
+        display_figure(fig, mode, filename, kind='TM')

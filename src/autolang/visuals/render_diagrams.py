@@ -68,7 +68,7 @@ def render_digraph(digraph: nx.DiGraph,
     # Create matplotlib figure
     fig, ax = plt.subplots()
     ax.set_axis_off() # Hide axes and grid
-    fig.suptitle(digraph.graph['name']) # Show diagram title
+    fig.suptitle(digraph.graph['title']) # Show diagram title
 
     # Get node colours
     # Ensure colour order matches node order in digraph

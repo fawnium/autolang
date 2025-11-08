@@ -61,24 +61,25 @@ def can_call_plt_show() -> bool:
     return False # May have false negatives
     
 # Generate default filename for image if none given
-# TODO change default filename ? should include automaton model at least
 def get_filename(kind: str = '') -> str:
-    # Default to just naming by the current time as 'HH_MM_SS'
-        time_str = datetime.now().strftime("%H_%M_%S")
-        filename = kind + 'transition_diagram_' + time_str + '.png'
-        return filename
+    # Default filename is automaton kind, plus time as 'HH_MM_SS_UUUUUU'
+    time_str = datetime.now().strftime("%H_%M_%S_%f")
+    filename = kind + '_transition_diagram_' + time_str + '.png'
+    return filename
 
 
 # Display matplotlib figure if GUI backend present
 # Save as image if no GUI backend
 def display_figure(fig: Figure, 
                    mode: str | None = None, 
-                   filename: str | None = None):
+                   filename: str | None = None,
+                   kind: str = ''):
     '''
-    fig: matplotlib figure that plots transition diagram
-    mode: either 'save' or 'show'
+    - `fig`: matplotlib figure that plots transition diagram
+    - `mode`: either 'save' or 'show'
         - if None, try to detect mode
-    filename: name to save image as e.g. 'diagram.png'
+    - `filename`: name to save image as e.g. 'diagram.png'
+    - `kind`: automaton model, used for default filename
     '''
     # Try to auto-detect best mode
     if mode is None:
@@ -103,7 +104,7 @@ def display_figure(fig: Figure,
         os.makedirs('images', exist_ok=True)
         # Determine filename
         if filename is None:
-            filename = get_filename()
+            filename = get_filename(kind)
         # Save image
         fig.savefig('images/' + filename)
 
