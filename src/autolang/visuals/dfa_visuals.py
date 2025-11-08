@@ -7,7 +7,7 @@ from collections.abc import Iterable
 
 import networkx as nx
 
-# Print formatted transition table of DFA
+# Generate string for formatted transition table of DFA
 # NOTE this function is only called by `DFA` object
 # NOTE all args are assumed valid and no input handling occurs here
 def _transition_table_dfa(transition: TransitionDFA) -> str:
@@ -24,18 +24,18 @@ def _transition_table_dfa(transition: TransitionDFA) -> str:
         return s + (' ' * (width - len(s)))
     
     # Generate top border and header line of letters
-    def header():
+    def header() -> str:
         top_border_line = DR + (H * width) + (num * (DLR + (H * width))) + DL
         header_line = V + (width * ' ') + V + V.join(cell(letter) for letter in alphabet) + V
         return top_border_line + '\n' + header_line + '\n'
     
     # Generate bottom border
-    def footer():
+    def footer() -> str:
         bottom_border_line = UR + (H * width) + (num * (ULR + (H * width))) + UL
         return bottom_border_line + '\n'
     
     # Generate row of entries in table
-    def line(state: str):
+    def line(state: str) -> str:
         line = V + cell(state) # State header cell
         for letter in alphabet: # Add value cells
             next_state = transition.get((state, letter))
@@ -44,7 +44,7 @@ def _transition_table_dfa(transition: TransitionDFA) -> str:
         return line + '\n'
 
     # Generate line between table rows
-    def filler_line(): 
+    def filler_line() -> str: 
         filler_line = UDR + (H * width) + (num * (UDLR + (H * width))) + UDL
         return filler_line + '\n'
     

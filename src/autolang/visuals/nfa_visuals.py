@@ -12,43 +12,54 @@ def next_states_to_str(states: tuple[str, ...]) -> str:
     if not states: return EMPTY # Case where no next states
     return '{' + ','.join(sorted(states, key=lambda s: (len(s), s))) + '}' # Case where more than zero next states
 
-# Print formatted transition table of NFA
+# Generate string for formatted transition table of NFA
 # NOTE this function is only called by `NFA` object
 # NOTE all args are assumed valid and no input handling occurs here
-def _transition_table_nfa(transition: TransitionNFA):
+def _transition_table_nfa(transition: TransitionNFA) -> str:
     # Unpack states and alphabet
     states = transition.states
     alphabet = transition.alphabet
+
     # Find widest table entry and number of non-header columns
     width = max(len(next_states_to_str(next_states)) for next_states in transition.values()) # Longest name of table entry for setting column width
     num = len(alphabet) + 1 # Number of non-header cols - must add 1 for epsilon col
+
     # Helper to pad cells with whitespace
     def cell(s: str) -> str:
         return s + (' ' * (width - len(s)))
-    # Print top border and header line of letters
-    def print_header():
-        print(DR + (H * width) + (num * (DLR + (H * width))) + DL)
-        print(V + (width * ' ') + V + V.join(cell(letter) for letter in alphabet) + V + cell(EPSILON) + V)
-    # Print bottom border
-    def print_footer():
-        print(UR + (H * width) + (num * (ULR + (H * width))) + UL)
-    # Print row of entries in table
-    def print_line(state: str):
+    
+    # Generate top border and header line of letters
+    def header() -> str:
+        top_border_line = DR + (H * width) + (num * (DLR + (H * width))) + DL
+        header_line = V + (width * ' ') + V + V.join(cell(letter) for letter in alphabet) + V + cell(EPSILON) + V
+        return top_border_line + '\n' + header_line + '\n'
+
+    # Generate bottom border
+    def footer() -> str:
+        footer_line = UR + (H * width) + (num * (ULR + (H * width))) + UL
+        return footer_line + '\n'
+
+    # Generate row of entries in table
+    def line(state: str) -> str:
         line = V + cell(state) # State header cell
         for letter in (alphabet + ('',)): # Add value cells incl. epsilon col
             next_states = transition.get((state, letter))
             line += V + cell(next_states_to_str(next_states))
         line += V
-        print(line)
+        return line + '\n'
+
     # Print line between table rows
-    def print_filler_line(): 
-        print(UDR + (H * width) + (num * (UDLR + (H * width))) + UDL)
-    # Print formatted transition table
-    print_header()
+    def filler_line() -> str: 
+        filler_line = UDR + (H * width) + (num * (UDLR + (H * width))) + UDL
+        return filler_line + '\n'
+
+    # Generate complete formatted transition table
+    table = ''
+    table += header()
     for state in states:
-        print_filler_line()
-        print_line(state)
-    print_footer()
+        table += filler_line() + line(state)
+    table += footer()
+    return table
 
 
 def _get_nfa_digraph(transition: TransitionNFA, 

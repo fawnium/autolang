@@ -58,7 +58,7 @@ class DFA:
 
     # Print transition table
     def transition_table(self,
-                         output: bool = True):
+                         output: bool = True) -> str:
         '''
         - `output`: flag for printing directly to the terminal
         '''
