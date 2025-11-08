@@ -104,10 +104,17 @@ class PDA:
     # VISUALISATION METHODS
 
     # Print transition table
-    def transition_table(self):
-        print(f'Transition table of {repr(self)}:')
-        _transition_table_pda(self.transition)
-
+    def transition_table(self,
+                         output: bool = True) -> str:
+        '''
+        - `output`: flag for printing directly to the terminal
+        '''
+        table = _transition_table_pda(self.transition)
+        if output:
+            print(f'Transition table of {repr(self)}:')
+            print(table)
+        return table
+        
     # Create transition diagram of PDA
     # Either plots directly or saves
     def transition_diagram(self, *,
