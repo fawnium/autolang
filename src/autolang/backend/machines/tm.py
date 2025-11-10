@@ -81,12 +81,16 @@ class TM:
         return ConfigTM(next_state, tape, head, next_path)
     
     # Compute input word and decide acceptance
-    def accepts(self, 
-                word: str) -> bool: # Returns `None` if input word undecidable
+    # Called by .accepts() and .compute()
+    def _run(self, 
+             word: str) -> tuple[bool, tuple[str]]:
         '''
-        - Transition through configs until accept/reject state reached, or total steps exceeds limit `MAX_STEPS`
-        - Only one config variable `current` needed (no `queue`) due to determinism
-        - return: True = accept, False = reject, None = undecided (either likely undecidable or definitely undecidable)
+        - `word`: input word to be computed
+        - returns: acceptance state (True/False/None) and tape at halting step
+            - None for acceptance state means either undecidable, or max steps exceeded (i.e. likely undecidable)
+        
+        Transitions through configs until accept/reject state reached, or total steps exceeds limit `MAX_STEPS`.
+        Only one config variable `current` needed (no `queue`) due to determinism.
         '''
         # Check input
         if DEFAULT_TM_BLANK in word:
@@ -94,7 +98,7 @@ class TM:
         if not all(letter in self.input_alphabet for letter in word): # Reject if unrecognised symbols in input, TODO maybe raise error instead?
             return False
 
-        tape = [letter for letter in word] if word else [DEFAULT_TM_BLANK] # Initialise tape
+        tape = [letter for letter in word] if word else [DEFAULT_TM_BLANK] # Initialise tape, single blank cell if empty input
         current = ConfigTM(self.start, tape, 0, None) # Current config, including state and tape data - initialise as start
         steps = 0 # Number of steps executed
         visited = set() # Track seen configs to detect infinite loops
@@ -105,15 +109,27 @@ class TM:
             current = self.next_config(current)
             steps += 1
             if current in visited:
-                return None # Abort if circular computation, since word can't be decided
+                return None, current.tape # Abort if circular computation, since word can't be decided
             visited.add(current)
         # Decide accept/reject/undecided
         if current.state == self.accept:
-            return True
+            return True, current.tape
         elif current.state == self.reject:
-            return False
+            return False, current.tape
         else:
-            return None # Case where max steps exceeded
+            return None, current.tape # Case where max steps exceeded
+
+    # Compute input word and decide acceptance
+     # Returns `None` if input word undecidable
+    def accepts(self, 
+                word: str) -> bool:
+        acceptance, tape = self._run(word)
+        return acceptance
+        
+    # Same as `accepts()`, but also returns tape at halting step
+    def compute(self,
+                word: str) -> bool:
+        return self._run(word)
         
     # Generate language of TM up to given length
     # By default, returns tuple up-front, returns generator if lazy = True
