@@ -4,18 +4,23 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "autolang"
-version = "0.1.1"
-description = "A simple python project for simulating finite state automata, formal languages and grammars, and Turing machines."
+version = "0.2.0"
+description = "A Python library for simulating finite automata, formal languages, and Turing machines."
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
     { name= "fawnium", email = "oisinlyons1@gmail.com"}
 ]
 requires-python = ">=3.12"
+# Earlier dependency versions will probably work, but these are the versions tested
 dependencies = [
-    "networkx",
-    "matplotlib"
+    "networkx>=3.5",
+    "matplotlib>=3.10.7"
 ]
+
+# Core dependencies may be moved here later
+[project.optional-dependencies]
+viz = []
 
 [project.urls]
 Homepage = "https://github.com/fawnium/autolang"
