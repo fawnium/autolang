@@ -6,8 +6,6 @@ Initialise many automata for testing
 '''
 
 
-
-
 # DFAs
 
 # {w | w contains at least one '1' and the final '1' is followed by an even number of '0's}
@@ -166,7 +164,7 @@ tran1 = {
     ('q7', '1'): ('q7', '1', 'L'),
     ('q7', 'x'): ('q1', 'x', 'R'),
     ('q8', '_'): ('qa', '_', 'R'),
-    ('q8', 'x'): ('q8', '0', 'R'),
+    ('q8', 'x'): ('q8', 'x', 'R'),
 }
 tm1 = TM(tran1, 'q1', 'qa', 'qr', reserved_letters={'x', '_'})
 

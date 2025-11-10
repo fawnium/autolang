@@ -41,7 +41,7 @@ class TestTransitionTableTM(unittest.TestCase):
 ╠════════╬════════╬════════╬════════╬════════╬════════╣
 ║q7      ║qr      ║(q7,0,L)║(q7,1,L)║qr      ║(q1,x,R)║
 ╠════════╬════════╬════════╬════════╬════════╬════════╣
-║q8      ║qr      ║qr      ║qr      ║qa      ║(q8,0,R)║
+║q8      ║qr      ║qr      ║qr      ║qa      ║(q8,x,R)║
 ╚════════╩════════╩════════╩════════╩════════╩════════╝
 '''
         actual = tm1.transition_table(output=False)
