@@ -495,6 +495,16 @@ automaton = DFA(...) # Example creation
 word_is_in_language = automaton.accepts('01') # True or False
 ```
 
+To also view the tape of a `TM` after computing a word, use `.compute()` instead of `.accepts()`.
+- This returns two objects: the first a bool for whether the TM accepts the word (as with `.accepts()`); the second is a tuple representing the tape, where each value is a cell. The returned tape is the configuration immediately after entering a halting state.
+- This method is **only for TMs**. Other automata do not have a `.compute()` method.
+
+```python
+tm = TM(...) # Create TM as in above example
+
+tm.compute('00') # Returns: True, ('_', 'x', '_', '_')
+```
+
 To get the whole language of an automaton, up to a given length, use `.L()`.
 
 > [!WARNING]
