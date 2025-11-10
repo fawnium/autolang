@@ -16,13 +16,18 @@ dist/
 .vscode/
 *.swp
 *.swo
+*.ipynb
 
 # Logs and notes
 *.log
 TODO.txt
 
-# Test file
+# Test files
 main.py
+#setup_automata.py
 
+# Transition diagram tests
+images/
 
-
+# WIP
+requirements.txt

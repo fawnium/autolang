@@ -44,7 +44,7 @@ tran1 = {
     ('q7', 'x'): ('q1', 'x', 'R'),
 
     ('q8', '_'): ('qa', '_', 'R'),
-    ('q8', 'x'): ('q8', '0', 'R'),
+    ('q8', 'x'): ('q8', 'x', 'R'),
 }
 # Create TM itself
 M1 = TM(tran1, 'q1', 'qa', 'qr', reserved_letters={'x', '_'}) # Blank '_' is special and doesn't strictly need to be listed as reserved, but it can be

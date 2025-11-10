@@ -1,13 +1,22 @@
 from autolang.backend.utils import words_to_length
 from autolang.backend.machines.structs_config import ConfigPDA
 from autolang.backend.machines.structs_transition import TransitionPDA
-from autolang.visuals.pda_visuals import _transition_table_pda
+from autolang.backend.machines.settings_machines import DEFAULT_LANGUAGE_LENGTH
+
+from autolang.visuals.pda_visuals import _transition_table_pda, _get_pda_digraph
+from autolang.visuals.render_diagrams import render_digraph
+from autolang.visuals.display_diagrams import display_figure
+
 from collections.abc import Iterable, Generator
 
 class PDA:
     # NOTE stack is represented as a string *not* a list of chars, and the top is defined as the start (stack[0])
 
-    def __init__(self, transition: dict[tuple[str, str, str], tuple[tuple[str, str], ...]], start: str, accept: Iterable[str]):
+    def __init__(self, 
+                 transition: dict[tuple[str, str, str], tuple[tuple[str, str], ...]], 
+                 start: str, 
+                 accept: Iterable[str]):
+        
         self.transition = TransitionPDA(transition) # Wrap transition function and check valid encoding
         self.states = self.transition.states
         self.input_alphabet = self.transition.input_alphabet
@@ -28,7 +37,9 @@ class PDA:
         return self.__repr__()
     
     # Get list of next configs reachable from current state, next letter, and stack top - including via not reading one or both of latter
-    def next_configs(self, config: ConfigPDA) -> tuple[ConfigPDA]:
+    def next_configs(self, 
+                     config: ConfigPDA) -> tuple[ConfigPDA]:
+        
         configs = [] # All reachable next configs, filled below
         # Extract current config
         current_state = config.state
@@ -50,7 +61,8 @@ class PDA:
                         configs.append(ConfigPDA(next_state, next_suffix, next_stack, next_path))
         return configs
     
-    def accepts(self, word: str) -> bool:
+    def accepts(self, 
+                word: str) -> bool:
         '''
         - initialise `queue` with start state and whole input word
         - simulate all computation branches using BFS:
@@ -81,7 +93,10 @@ class PDA:
     
     # Generate language of PDA up to given length
     # By default, returns tuple up-front, returns generator if lazy = True
-    def L(self, n: int = 5, lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+    def L(self, 
+          n: int = DEFAULT_LANGUAGE_LENGTH, 
+          lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+        
         # Generator object that produces words accepted by PDA
         gen = (word for word in words_to_length(n, self.input_alphabet) if self.accepts(word))
         return gen if lazy else tuple(gen)
@@ -89,10 +104,32 @@ class PDA:
     # VISUALISATION METHODS
 
     # Print transition table
-    def transition_table(self):
-        print(f'Transition table of {repr(self)}:')
-        _transition_table_pda(self.transition)
-
-    # Transition diagram (WIP v0.2.0)
-    def transition_diagram(self):
-        raise NotImplementedError
+    def transition_table(self,
+                         output: bool = True) -> str:
+        '''
+        - `output`: flag for printing directly to the terminal
+        '''
+        table = _transition_table_pda(self.transition)
+        if output:
+            print(f'Transition table of {repr(self)}:')
+            print(table)
+        return table
+        
+    # Create transition diagram of PDA
+    # Either plots directly or saves
+    def transition_diagram(self, *,
+                           mode: str | None = None,
+                           filename: str | None = None,
+                           layout: str | None = None):
+        '''
+        - `mode`: either 'save' or 'show'
+            - auto-detected if None
+        - `filename`: name of saved image file if 'save' mode
+        - `layout`: nx layout algorithm used for plotting, e.g. 'shell'
+        '''
+        # Create nx digraph encoding PDA
+        digraph = _get_pda_digraph(self.transition, self.start, self.accept, filename)
+        # Create matplotlib figure that plots digraph
+        fig = render_digraph(digraph, layout)
+        # Show/save final diagram
+        display_figure(fig, mode, filename, kind='PDA')

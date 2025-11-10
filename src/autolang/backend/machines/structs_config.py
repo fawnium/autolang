@@ -57,7 +57,11 @@ class ConfigTM:
     TM config tracks the tape, current state, current head position, and transition history for logging, for each step in the computation.
     '''
 
-    def __init__(self, state: str, tape: list[str], head: int, path: tuple[tuple[str, str]] = tuple()):
+    def __init__(self, 
+                 state: str, 
+                 tape: list[str], 
+                 head: int, 
+                 path: tuple[tuple[str, str]] = tuple()):
         self.state = state # Current state
         self.tape = tape # Current tape
         self.head = max(head, 0) # Tape head position

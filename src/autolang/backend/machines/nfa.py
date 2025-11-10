@@ -1,12 +1,21 @@
 from autolang.backend.utils import words_to_length
 from autolang.backend.machines.structs_config import ConfigNFA
 from autolang.backend.machines.structs_transition import TransitionNFA
-from autolang.visuals.nfa_visuals import _transition_table_nfa
+from autolang.backend.machines.settings_machines import DEFAULT_LANGUAGE_LENGTH
+
+from autolang.visuals.nfa_visuals import _transition_table_nfa, _get_nfa_digraph
+from autolang.visuals.render_diagrams import render_digraph
+from autolang.visuals.display_diagrams import display_figure
+
 from collections.abc import Iterable, Generator
 
 class NFA:
 
-    def __init__(self, transition: dict[tuple[str, str], tuple[str, ...]], start: str, accept: Iterable[str]):
+    def __init__(self, 
+                 transition: dict[tuple[str, str], tuple[str, ...]], 
+                 start: str, 
+                 accept: Iterable[str]):
+        
         self.transition = TransitionNFA(transition) # Wrap transition function and check valid encoding
         self.states = self.transition.states
         self.alphabet = self.transition.alphabet
@@ -26,7 +35,10 @@ class NFA:
         return self.__repr__()
     
     # TODO refactor more into `next_states` from `accepts` as with PDA case?
-    def next_states(self, state: str, letter: str) -> tuple[str, ...]:
+    def next_states(self, 
+                    state: str, 
+                    letter: str) -> tuple[str, ...]:
+        
         if state not in self.states:
             raise ValueError(f'State \'{state}\' is not a valid state for {self}.')
         if (letter not in self.alphabet) and (letter != ''):
@@ -35,7 +47,8 @@ class NFA:
             return tuple() # Empty next states if key not present, because no transitions
         return self.transition[(state, letter)]
     
-    def accepts(self, word: str) -> bool:
+    def accepts(self, 
+                word: str) -> bool:
         '''
         - initialise `queue` with start state and whole input word
         - simulate all computation branches using BFS:
@@ -75,7 +88,10 @@ class NFA:
     
     # Generate language of NFA up to given length
     # By default, returns tuple up-front, returns generator if lazy = True
-    def L(self, n: int = 5, lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+    def L(self, 
+          n: int = DEFAULT_LANGUAGE_LENGTH, 
+          lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+        
         # Generator object that produces words accepted by NFA
         gen = (word for word in words_to_length(n, self.alphabet) if self.accepts(word))
         return gen if lazy else tuple(gen)
@@ -83,10 +99,33 @@ class NFA:
     # VISUALISATION METHODS
 
     # Print transition table
-    def transition_table(self):
-        print(f'Transition table of {repr(self)}:')
-        _transition_table_nfa(self.transition)
+    def transition_table(self,
+                         output: bool = True) -> str:
+        '''
+        - `output`: flag for printing directly to the terminal
+        '''
+        table = _transition_table_nfa(self.transition)
+        if output:
+            print(f'Transition table of {repr(self)}:')
+            print(table)
+        return table
 
-    # Transition diagram (WIP v0.2.0)
-    def transition_diagram(self):
-        raise NotImplementedError
+    # Create transition diagram of NFA
+    # Either plots directly or saves
+    def transition_diagram(self, *,
+                           mode: str | None = None,
+                           filename: str | None = None,
+                           layout: str | None = None):
+        '''
+        - `mode`: either 'save' or 'show'
+            - auto-detected if None
+        - `filename`: name of saved image file if 'save' mode
+        - `layout`: nx layout algorithm used for plotting, e.g. 'shell'
+        '''
+        # Create nx digraph encoding DFA
+        digraph = _get_nfa_digraph(self.transition, self.start, self.accept, filename)
+        # Create matplotlib figure that plots digraph
+        fig = render_digraph(digraph, layout)
+        # Show/save final diagram
+        display_figure(fig, mode, filename, kind='NFA')
+        

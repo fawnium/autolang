@@ -1,11 +1,20 @@
 from autolang.backend.utils import words_to_length
 from autolang.backend.machines.structs_transition import TransitionDFA
-from autolang.visuals.dfa_visuals import _transition_table_dfa
+from autolang.backend.machines.settings_machines import DEFAULT_LANGUAGE_LENGTH
+
+from autolang.visuals.dfa_visuals import _transition_table_dfa, _get_dfa_digraph
+from autolang.visuals.render_diagrams import render_digraph
+from autolang.visuals.display_diagrams import display_figure
+
 from collections.abc import Iterable, Generator
 
 class DFA:
 
-    def __init__(self, transition: dict[tuple[str, str], str], start: str, accept: Iterable[str]):
+    def __init__(self, 
+                 transition: dict[tuple[str, str], str], 
+                 start: str, 
+                 accept: Iterable[str]):
+        
         self.transition = TransitionDFA(transition) # Wrap transition function and check valid encoding
         self.states = self.transition.states # Unpack states
         self.alphabet = self.transition.alphabet # Unpack alphabet
@@ -24,7 +33,9 @@ class DFA:
     def __str__(self):
         return self.__repr__()
     
-    def accepts(self, word: str) -> bool:
+    def accepts(self, 
+                word: str) -> bool:
+        
         if not isinstance(word, str): raise TypeError(f'Input word \'{word}\' is not a string.')
         if not all(letter in self.alphabet for letter in word): # Auto-reject if any unrecognised letters. TODO maybe this should raise an error instead?
             return False
@@ -35,7 +46,10 @@ class DFA:
     
     # Generate language of DFA up to given length
     # By default, returns tuple up-front, returns generator if lazy = True
-    def L(self, n: int = 5, lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+    def L(self, 
+          n: int = DEFAULT_LANGUAGE_LENGTH, 
+          lazy: bool = False) -> tuple[str, ...] | Generator[str]:
+        
         # Generator object that produces words accepted by DFA
         gen = (word for word in words_to_length(n, self.alphabet) if self.accepts(word))
         return gen if lazy else tuple(gen)
@@ -43,10 +57,34 @@ class DFA:
     # VISUALISATION METHODS
 
     # Print transition table
-    def transition_table(self):
-        print(f'Transition table of {repr(self)}:')
-        _transition_table_dfa(self.transition)
+    def transition_table(self,
+                         output: bool = True) -> str:
+        '''
+        - `output`: flag for printing directly to the terminal
+        '''
+        table = _transition_table_dfa(self.transition)
+        if output:
+            print(f'Transition table of {repr(self)}:')
+            print(table)
+        return table
 
-    # Transition diagram (WIP v0.2.0)
-    def transition_diagram(self):
-        raise NotImplementedError
+        
+    # Create transition diagram of DFA
+    # Either plots directly or saves
+    def transition_diagram(self, *,
+                           mode: str | None = None,
+                           filename: str | None = None,
+                           layout: str | None = None):
+        '''
+        - `mode`: either 'save' or 'show'
+            - auto-detected if None
+        - `filename`: name of saved image file if 'save' mode
+        - `layout`: nx layout algorithm used for plotting, e.g. 'shell'
+        '''
+        # Create nx digraph encoding DFA
+        digraph = _get_dfa_digraph(self.transition, self.start, self.accept, filename)
+        # Create matplotlib figure that plots digraph
+        fig = render_digraph(digraph, layout)
+        # Show/save final diagram
+        display_figure(fig, mode, filename, kind='DFA')
+

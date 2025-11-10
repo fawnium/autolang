@@ -14,3 +14,10 @@ Initial version of *autolang*. Includes the following features:
 - Added generator support to `.L()` methods for automata
     - This is intended for downstream uses of automata within the project, where storing the whole language is not necessary
     - For regular use, the default is still returning the whole language-tuple, so users can immediately see the list of accepted words
+
+## v0.2.0
+- Added `regex_to_dfa()` to convert regex directly to DFA, without intermediate NFA
+- Added transition diagram visualisation via the `.transition_diagram()` method
+    - This supports both inline plotting with a GUI backend, and saving images in headless environments
+- Added feature to inspect Turing machine tapes via the `.compute()` method
+- A few small bug fixes and changes to the source code
