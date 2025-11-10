@@ -109,15 +109,15 @@ class TM:
             current = self.next_config(current)
             steps += 1
             if current in visited:
-                return None, current.tape # Abort if circular computation, since word can't be decided
+                return None, tuple(current.tape) # Abort if circular computation, since word can't be decided
             visited.add(current)
         # Decide accept/reject/undecided
         if current.state == self.accept:
-            return True, current.tape
+            return True, tuple(current.tape)
         elif current.state == self.reject:
-            return False, current.tape
+            return False, tuple(current.tape)
         else:
-            return None, current.tape # Case where max steps exceeded
+            return None, tuple(current.tape) # Case where max steps exceeded
 
     # Compute input word and decide acceptance
      # Returns `None` if input word undecidable

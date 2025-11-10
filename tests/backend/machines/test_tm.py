@@ -63,6 +63,23 @@ class TestTM(unittest.TestCase):
         self.assertFalse(tm.accepts('0#1'))
         self.assertFalse(tm.accepts('10#01'))
 
+    def test_compute(self):
+        tm = TM(self.tran, self.start, self.accept, self.reject, self.reserved_letters)
+        self.assertEqual(tm.compute('#')[1],       ('#', '_', '_'))
+        self.assertEqual(tm.compute('0#0')[1],     ('x', '#', '0', '_', '_'))
+        self.assertEqual(tm.compute('1#1')[1],     ('x', '#', '0', '_', '_'))
+        self.assertEqual(tm.compute('00#00')[1],   ('x', 'x', '#', '0', '0', '_', '_'))
+        self.assertEqual(tm.compute('01#01')[1],   ('x', 'x', '#', '0', '0', '_', '_'))
+        self.assertEqual(tm.compute('10#10')[1],   ('x', 'x', '#', '0', '0', '_', '_'))
+        self.assertEqual(tm.compute('11#11')[1],   ('x', 'x', '#', '0', '0', '_', '_'))
+        self.assertEqual(tm.compute('101#101')[1], ('x', 'x', 'x', '#', '0', '0', '0', '_', '_'))
+
+        self.assertEqual(tm.compute('')[1],        ('_', '_'))
+        self.assertEqual(tm.compute('0#')[1],      ('x', '#', '_', '_'))
+        self.assertEqual(tm.compute('1#')[1],      ('x', '#', '_', '_'))
+        self.assertEqual(tm.compute('0#1')[1],     ('x', '#', '1', '_'))
+        self.assertEqual(tm.compute('10#01')[1],   ('x', '0', '#', '0', '1'))
+
     def test_L(self):
         tm = TM(self.tran, self.start, self.accept, self.reject, self.reserved_letters)
         language_8 = {'#', '0#0', '1#1', '00#00', '01#01', '10#10', '11#11', '000#000', 
@@ -85,6 +102,9 @@ class TestTM(unittest.TestCase):
 
     def test_transition_diagram(self):
         pass
+
+    def test_run(self):
+        pass # Redundant as covered by testing accepts() and compute()
 
 
 if __name__ == '__main__':
