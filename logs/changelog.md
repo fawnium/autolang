@@ -17,3 +17,7 @@ Initial version of *autolang*. Includes the following features:
 
 ## v0.2.0
 - Added `regex_to_dfa()` to convert regex directly to DFA, without intermediate NFA
+- Added transition diagram visualisation via the `.transition_diagram()` method
+    - This supports both inline plotting with a GUI backend, and saving images in headless environments
+- Added feature to inspect Turing machine tapes via the `.compute()` method
+- A few small bug fixes and changes to the source code
