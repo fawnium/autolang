@@ -1,22 +1,70 @@
-# autolang v0.1.1
+# autolang v0.2.0
 
-*README last updated 12/10/2025*
+*README last updated 10/11/2025*
+
+<p style="text-align: center;">
+  <img src="assets/dfa4.png" alt="DFA diagram" width="45%">
+  <img src="assets/pda1.png" alt="PDA diagram" width="45%">
+</p>
+<p style="text-align: center;">
+  <em>Transition diagrams created with autolang</em>
+</p>
 
 *autolang* is a simple Python project based around finite-state automata, formal languages and grammars, and Turing machines. It is intended for educational use, so that students who are studying the theory within this area may supplement their understanding by creating and running their own real automata to see how they work. 
 
 The project is heavily based on the theory from *Introduction to the Theory of Computation* by Michael Sipser.
 
-- **version** : 0.1.1
+- **version** : 0.2.0
 - **license** : MIT standard license
 - **build status** : prototype/WIP
 - **Python version** : 3.12+
-- **Python dependencies** : only the standard library
+- **Python dependencies** : `networkx>=3.5`, `matplotlib>=3.10.7` (for visualisation *only*)
 - **official repository** : https://github.com/fawnium/autolang
 - **enquiries** : oisinlyons1@gmail.com
 
-The current release is v0.1.1, which includes creating and simulating various automaton models, printing transition tables, and constructing automata from regular expressions via canonical methods. See [Features](#features) for more details.
+The current release is v0.2.0, which includes creating and simulating various automaton models, visualising transition tables and diagrams, and constructing automata from regular expressions via canonical methods. See [Features](#features) for more details.
 
 Many more features are planned, as outlined in the [Roadmap](#roadmap).
+
+### README Contents
+- [Quick Start](#quick-start)
+- [Example Use](#example-use)
+- [Description](#description)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Design Philosophy](#design-philosophy)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Issues](#issues)
+- [Testing](#testing)
+- [Roadmap](#roadmap)
+- [License](#license)
+- [Credits and Acknowledgements](#credits-and-acknowledgements)
+
+### Quick Start
+
+Developer install (editable):
+```bash
+git clone https://github.com/fawnium/autolang.git
+cd autolang
+pip install -e .
+
+# Update to most recent patch
+git pull
+```
+User install (as a normal package):
+```bash
+pip install git+https://github.com/fawnium/autolang.git
+
+# Update to most recent version
+pip install -U git+https://github.com/fawnium/autolang.git
+
+# Update to most recent patch (within same version)
+pip install --force-reinstall --no-cache-dir git+https://github.com/fawnium/autolang.git
+```
+
+See [Installation](#installation) for more details.
 
 ### Example Use
 
@@ -56,20 +104,6 @@ dfa2 = nfa_to_dfa(nfa) # Create corresponding DFA
 dfa2_language = dfa2.L(10) # All words should match '(0+1)0*'
 ```
 
-### README Contents
-- [Description](#description)
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Design Philosophy](#design-philosophy)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [Issues](#issues)
-- [Testing](#testing)
-- [Roadmap](#roadmap)
-- [License](#license)
-- [Credits and Acknowledgements](#credits-and-acknowledgements)
-
 <details>
 <summary><h2 id="description">Description</h2></summary>
 
@@ -107,8 +141,12 @@ Each of the above models supports the following methods:
     - **WARNING:** Please note that the number of words checked grows exponentially with the length given, and the size of the underlying alphabet. Caution is advised when calling this method with a large integer or an alphabet with more than a handful of letters, as it may take several minutes or hours to terminate.
 
 - `.transition_table()` 
-    - Prints the transition table of the given automaton to the terminal.
-    - **NOTE:** This feature may change in future versions, i.e. by returning a string instead of printing directly.
+    - Returns a string representing the transition table of the given automaton.
+    - Use `output=True` as an argument to print directly to the terminal.
+
+- `.transition_diagram()`
+    - Creates a matplotlib plot of the given automaton's transition diagram.
+    - Use `mode='save'` as an argument to save an image instead of plotting inline.
 
 For guidance on creating specific automata, see [Usage](#usage) below, and the `examples/` folder inside the repository.
 
@@ -147,7 +185,7 @@ Below is a summary of the *autolang* installation process:
 - Navigate to the new `autolang/` subfolder.
 - Create a virtual environment if required.
 - Activate the virtual environment, if created. This step is OS-dependent
-- `pip` install *autolang* as a local module, so python knows where to find the source code to import.
+- `pip` install *autolang* as a local module, so Python knows where to find the source code to import.
 
 After doing steps 1 and 2, complete the installation by running the following commands in order:
 
@@ -184,7 +222,7 @@ Ensure this command is run when your working directory is the `autolang/` folder
 
 ### User Install
 
-Currently, *autolang* cannot be installed from the official python package repository (yet). However, `pip` can still be used to install autolang directly from the GitHub repository. This is very similar to normal `pip` package installs, but **you must ensure you have `git` installed on your computer first**.
+Currently, *autolang* cannot be installed from PyPI (yet). However, `pip` can still be used to install autolang directly from the GitHub repository. This is very similar to normal `pip` package installs, but **you must ensure you have `git` installed on your computer first**.
 
 #### Setting up a virtual environment (optional, recommended)
 
@@ -268,27 +306,6 @@ DFA(transition: dict[tuple[str, str], str],
 - States can be given any name, not just `q0, q1, ...`. Certain characters are forbidden from appearing in state names, such as `'+'` or `'_'`, but the number is relatively small. You can stick to letters and numbers to be safe.
 - Letters must be single characters, but likewise can be any character other than the small number of forbidden characters.
 
-To see if a DFA accepts a specific word, use the `.accepts()` method:
-
-```python
-is_in_language = dfa.accepts('ab') # True or False
-```
-
-To get the whole language of a DFA, up to a certain length, use the `.L()` method:
-
-```python
-language_of_dfa = dfa.L(4) # Tuple of all accepted words up to length 4, in len-lex order
-```
-
-> [!WARNING]
-> Be careful using this method with a large length value, as it will take exponential time to compute.
-
-To print the transition table of a DFA for a nice visual, use the `.transition_table()` method:
-
-```python
-dfa.transition_table() # Prints to terminal
-```
-
 Below is an example of creating a specific DFA. This is the DFA $M_1$ in Sipser, p36.
 
 ```python
@@ -305,16 +322,6 @@ tran1 = {
 }
 # Create the DFA itself
 M1 = DFA(tran1, 'q1', ['q2']) # The name 'M1' is arbitrary, and any valid variable name can be used
-
-# Check specific words
-M1.accepts('000') # Will return `False`
-M1.accepts('100') # Will return `True`
-
-# Generate the language of M1 up to length 3
-M1.L(3) # Will return `('1', '01', '11', '001', '011', '100', '101', '111')`
-
-# Print M1's transition table
-M1.transition_table()
 ```
 </details>
 
@@ -343,27 +350,6 @@ NFA(transition: dict[tuple[str, str], tuple[str, ...]],
 - The alphabet and total list of states are automatically inferred from the `transition` function.
 - The same restrictions on naming states and letters apply here as they do for [DFAs](#creating-a-dfa).
 
-To see if an NFA accepts a specific word, use the `.accepts()` method:
-
-```python
-is_in_language = nfa.accepts('ab') # True or False
-```
-
-To get the whole language of an NFA, up to a certain length, use the `.L()` method:
-
-```python
-language_of_nfa = nfa.L(4) # Tuple of all accepted words up to length 4, in len-lex order
-```
-
-> [!WARNING]
-> Be careful using this method with a large length value, as it will take exponential time to compute.
-
-To print the transition table of an NFA for a nice visual, use the `.transition_table()` method:
-
-```python
-nfa.transition_table() # Prints to terminal
-```
-
 Below is an example of creating a specific NFA. This is the NFA $N_1$ in Sipser, p48.
 
 ```python
@@ -381,15 +367,6 @@ tran1 = {
 }
 # Create NFA itself
 N1 = NFA(tran1, 'q1', ['q4'])
-
-# Check specific words
-N1.accepts('010') # False
-
-# Generate the language up to length 3
-N1.L(3) # Returns tuple
-
-# Print transition table
-N1.transition_table()
 ```
 </details>
 
@@ -420,27 +397,6 @@ PDA(transition: dict[tuple[str, str, str], tuple[tuple[str, str], ...]],
 - The alphabets (input and stack) and total list of states are automatically inferred from the `transition` function.
 - The same restrictions on naming states and letters apply here as they do for DFAs and NFAs.
 
-To see if a PDA accepts a specific word, use the `.accepts()` method:
-
-```python
-is_in_language = pda.accepts('ab') # True or False
-```
-
-To get the whole language of a PDA, up to a certain length, use the `.L()` method:
-
-```python
-language_of_pda = pda.L(4) # Tuple of all accepted words up to length 4, in len-lex order
-```
-
-> [!WARNING]
-> Be careful using this method with a large length value, as it will take exponential time to compute.
-
-To print the transition table of a PDA for a nice visual, use the `.transition_table()` method:
-
-```python
-pda.transition_table() # Prints to terminal
-```
-
 Below is an example of creating a specific PDA. This is PDA $M_1$ in Sipser, p114.
 
 ```python
@@ -455,16 +411,6 @@ tran1 = {
 }
 # Create PDA itself
 M1 = PDA(tran1, 'q1', ['q1', 'q4'])
-
-# Check specific words
-M1.accepts('0011') # True
-M1.accepts('010') # False
-
-# Generate the language up to length 3
-M1.L(8) # Returns ('', '01', '0011', '000111', '00001111')
-
-# Print transition table
-M1.transition_table()
 ```
 </details>
 
@@ -500,28 +446,7 @@ TM(transition: dict[tuple[str, str], tuple[str, str, str]],
 - `reserved_letters: Iterable[str]` is a list of letters which are intended strictly for use on the tape, and should not be allowed in input words. There is no way to distinguish between the input alphabet and the tape alphabet without you manually stipulating it.
     - The blank letter `'_'` is *always* reserved, and doesn't need to be included in this arg.
 - The alphabets (input and tape) and total list of states are automatically inferred from the `transition` function, and `reserved_letters`.
-- You cannot use `'_'` as an input letter, since it will just be interpereted as blank. Any other character should be a valid letter for TMs.
-
-To see if a TM accepts a specific word, use the `.accepts()` method:
-
-```python
-is_in_language = tm.accepts('ab') # True or False
-```
-
-To get the whole language of a TM, up to a certain length, use the `.L()` method:
-
-```python
-language_of_tm = tm.L(4) # Tuple of all accepted words up to length 4, in len-lex order
-```
-
-> [!WARNING]
-> Be careful using this method with a large length value, as it will take exponential time to compute.
-
-To print the transition table of a TM for a nice visual, use the `.transition_table()` method:
-
-```python
-tm.transition_table() # Prints to terminal
-```
+- You cannot use `'_'` as an input letter, since it will just be interpreted as blank. Any other character should be a valid letter for TMs.
 
 Below is an example of creating a specific TM. This is TM $M_2$ in Sipser, p172.
 
@@ -552,16 +477,73 @@ tran2 = {
 }
 # Create TM itself
 M2 = TM(tran2, 'q1', 'qa', 'qr', {'x'})
+```
+</details>
 
-# Check specific words
-M1.accepts('00') # True
-M1.accepts('000') # False
+<details>
+<summary><h3 id="using-automata">Using Automata</h3></summary>
 
-# Generate the language up to length 3
-M1.L(10) # Returns ('0', '00', '0000', '00000000')
+See the above sections for how to create specific automata.
 
-# Print transition table
-M1.transition_table()
+To see if an automata accepts a specific word, use `.accepts()`.
+- if the input word contains invalid letters, the automaton will reject (without raising an error).
+
+```python
+automaton = DFA(...) # Example creation
+
+word_is_in_language = automaton.accepts('01') # True or False
+```
+
+To get the whole language of an automaton, up to a given length, use `.L()`.
+
+> [!WARNING]
+> Be careful using this method with a large length value, as it will take exponential time to compute.
+
+- the first argument should be an integer representing the maximum length explored.
+- use `lazy=True` as the second argument to return a generator instead of a tuple. This saves memory use, and is recommended for large lengths and when the automaton is expected to to recognise many words.
+
+```python
+# Create tuple of the whole language up to length 4
+language = automaton.L(4)
+
+# Create generator instead
+# This can be iterated over in a for loop, but not directly printed
+language_gen = automaton.L(4, lazy=True)
+```
+
+To print the automaton's transition table as a nice visual, use `.transition_table()`
+- use `output=False` to prevent printing, and just return the string. The table string is returned regardless of whether it is also printed.
+
+```python
+# Print to terminal and return string
+automaton.transition_table()
+
+# Only return string
+automaton.transition_table(output=False)
+```
+
+To create a transition diagram for the automata, use `.transition_diagram()`
+- use `mode='show'` to plot line, e.g. in a jupyter notebook.
+- use `mode='save'` to save as an image. The image will be saved in the `images/` folder.
+- use `filename='your_file_name'` to specify the name of the image if `show` mode was chosen.
+- use `layout='<specific_networkx_layout>'` to specify the `networkx` layout algorithm used to draw the graph. Changing the drawing algorithm can often improve the visual readability of the diagram. The default layout is `shell` - see the file `autolang/visuals/settings_visuals.py` to change this.
+    - e.g. `'shell'`, `'kamada_kawaii'`, `'spring'`.
+    - **WARNING**: Some networkx layouts may raise an error as they require additional dependencies (i.e. `scipy`). See `https://networkx.org/documentation/stable/reference/drawing.html`.
+
+```python
+# Automatically choose display method if no `mode` given
+automaton.transition_diagram()
+
+# Plot inline (requires compatible matplotlib GUI backend)
+automaton.transition_diagram(mode='show')
+
+# Save an image
+automaton.transition_diagram(mode='save', filename='my_image')
+
+# Choose a different drawing algorithm
+# Default is 'shell'
+# Can be used in conjunction with above arguments as well
+automaton.transition_diagram(layout='spring')
 ```
 </details>
 
@@ -605,7 +587,7 @@ Python was chosen as the main language of the project because the language is re
 - The student returns to class, more confident that they understand automata and ready to learn more!
 
 ### Tactile Intuition
-'Tactile intuition' is quite a nebulous term, but is intended to capture the idea that users can 'see the concepts working' themselves, as opposed to simply reading them in a textbook or hearing them in a lecture, and getting the *sense* of understanding without the practical experience of doing exercises, which may reveal that *sense* to actually be false. Of course the textbooks and lectures are essential and are the most important aspect of learning automata theory. Understanding the formal proofs, doing pen-and-paper exercises, and generally using one's mind to think through automata behaviour, can never be substituded for naively entering commands in a Python terminal and trying to reverse-engineer the code's behaviour. Instead, 'tactile intuition' should be interpreted as a way to *supplement* the pen-and-paper work and approach the theory from a different angle. Some students may find that this hands-on approach causes concepts to 'click' with them more easily, whereas others may be more comfortable simply writing proofs and doing exercises with no additional material. In either case we believe that having more tools available will always be beneficial, provided they are used correctly by a motivated student, and are used to enhance theoretical understanding and not to take shortcuts which inhibit real learning.
+'Tactile intuition' is quite a nebulous term, but is intended to capture the idea that users can 'see the concepts working' themselves, as opposed to simply reading them in a textbook or hearing them in a lecture, and getting the *sense* of understanding without the practical experience of doing exercises, which may reveal that *sense* to actually be false. Of course the textbooks and lectures are essential and are the most important aspect of learning automata theory. Understanding the formal proofs, doing pen-and-paper exercises, and generally using one's mind to think through automata behaviour, can never be substituted for naively entering commands in a Python terminal and trying to reverse-engineer the code's behaviour. Instead, 'tactile intuition' should be interpreted as a way to *supplement* the pen-and-paper work and approach the theory from a different angle. Some students may find that this hands-on approach causes concepts to 'click' with them more easily, whereas others may be more comfortable simply writing proofs and doing exercises with no additional material. In either case we believe that having more tools available will always be beneficial, provided they are used correctly by a motivated student, and are used to enhance theoretical understanding and not to take shortcuts which inhibit real learning.
 
 Tactile intuition firstly covers the idea of *interactability*, which is always present when coding because users must write the function/API calls themselves. Having to manually create automata, including every specific detail of a transition function and other syntax, may make the student feel there is more 'intention' to their learning, and force them to carefully consider the precise components of the theory, rather than convincing themselves that they understand the general idea without catching the inner nuances. 
 
@@ -645,7 +627,7 @@ We are very grateful to receive any comments or constructive criticism about the
 python -m unittest discover tests
 ```
 
-**NOTE:** Our unit tests are an ongoing work in progress, and may not be particularly robust or compehensive. We are currently working on improving test-case coverage.
+**NOTE:** Our unit tests are an ongoing work in progress, and may not be particularly robust or comprehensive. We are currently working on improving test-case coverage.
 
 </details>
 
@@ -656,7 +638,7 @@ While *autolang* is very early in development, we are excited that it is being a
 
 Below is the general roadmap for the near future of the project. Please be aware that these features may change in terms of order of implementation and whether they will actually be added.
 
-### v0.2.0
+### v0.2.0 (✅ COMPLETED)
 
 - Transition diagrams for all existing models using `networkx` and `matplotlib`
     - This feature is very close to being in a usable state, and just needs to be integrated with the existing project
@@ -678,7 +660,7 @@ Below is the general roadmap for the near future of the project. Please be aware
 
 - Visuals for parse trees
 
-- Construct PDAs directly from CFGs via canonical methods, analagous to NFAs from regular expressions in v0.1.0
+- Construct PDAs directly from CFGs via canonical methods, analogous to NFAs from regular expressions in v0.1.0
 
 ### v0.5.0
 
