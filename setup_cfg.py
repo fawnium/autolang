@@ -26,3 +26,13 @@ cfg2 = CFG(rules2, '<SENTENCE>')
 
 rules3 = {'S': [['a','S','b'], ['S','S'], '']}
 cfg3 = CFG(rules3, 'S')
+
+
+rules4 = {'<EXPR>': [['<EXPR>', '+', '<TERM>'], '<TERM>'],
+          '<TERM>': [['<TERM>', '*', '<FACTOR>'], '<FACTOR>'],
+          '<FACTOR>': [['(', '<EXPR>', ')'], 'a']}
+cfg4 = CFG(rules4, '<EXPR>')
+
+# Ambiguous version of cg4
+rules5 = {'<EXPR>': [['<EXPR>', '+', '<EXPR>'], ['<EXPR>', '*', '<EXPR>'], ['(', '<EXPR>', ')'], 'a']}
+cfg5 = CFG(rules5, '<EXPR>')
