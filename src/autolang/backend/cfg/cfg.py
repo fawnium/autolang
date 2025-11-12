@@ -189,6 +189,13 @@ class CFG:
         new_rules[new_start] = ((renamed_self.start,), (renamed_other.start,))
 
         return CFG(new_rules, new_start)
+    
+    # CHOMSKY NORMAL FORM METHODS
+    
+    # Convert grammar to Chomsky normal form
+    def to_chomsky_normal_form(self) -> 'CFG':
+        new_start = disjoint_symbol('S', set(self.nonterminals) | set(self.terminals))
+
 
 
 
