@@ -13,7 +13,7 @@ class CFG:
         - `start`: start nonterminal, must be included in rules
         '''
         # Convert rules to standard form
-        self.rules = self.canonise_rules(rules)
+        self.rules = self._canonise_rules(rules)
         
         # Check start is listed as a nonterminal
         if start not in rules:
@@ -21,10 +21,10 @@ class CFG:
         self.start = start
 
         # Extract symbol sets
-        self.nonterminals, self.terminals = self.extract()
+        self.nonterminals, self.terminals = self._extract()
 
     # Ensure rules dict is correctly formatted and convert containers to tuples for consistency
-    def canonise_rules(self, rules: dict[str, Iterable[Iterable[str] | str]]) -> dict[str, tuple[tuple[str, ...], ...]]:
+    def _canonise_rules(self, rules: dict[str, Iterable[Iterable[str] | str]]) -> dict[str, tuple[tuple[str, ...], ...]]:
         '''
         - iterate through each str: Iterable pair in rules dict
         - the parent Iterable is a list of substitutions for the given nonterminal str
@@ -63,7 +63,7 @@ class CFG:
         return canonical
 
     # Establish terminals and nonterminals from rules
-    def extract(self) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    def _extract(self) -> tuple[tuple[str, ...], tuple[str, ...]]:
         '''
         - initialise terminals and nonterminals as sets
         - iterate through rules
