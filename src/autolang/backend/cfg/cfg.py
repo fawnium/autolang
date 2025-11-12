@@ -98,7 +98,7 @@ class CFG:
         repr_str = 'CFG(\n'
         for nonterminal, substitutions in self.rules.items():
             repr_str += nonterminal + ' ::= '
-            repr_str += ' | '.join(''.join(eps(symbol) for symbol in substitution) for substitution in substitutions)
+            repr_str += ' | '.join(' '.join(eps(symbol) for symbol in substitution) for substitution in substitutions)
             repr_str += '\n'
         repr_str += ')'
         return repr_str
@@ -107,7 +107,8 @@ class CFG:
         return 'CFG with nonterminals {' + ','.join(self.nonterminals) + '} and terminals {' + ','.join(self.terminals) + '}'
     
     # Rename symbols in CFG
-    def _rename_symbols(self, rename_map: dict[str, str]) -> 'CFG':
+    @staticmethod
+    def _rename_symbols(cfg: 'CFG', rename_map: dict[str, str]) -> 'CFG':
         '''
         - `rename_map`: keys are current nonterminals, values are the corresponding renamed nonterminals
         
@@ -116,9 +117,13 @@ class CFG:
         - NOTE this function can be used to rename terminals for generality, but is only intended for nonterminals
         - if a symbol does not have an image in rename_map, it stays the same
         '''
+        # Ensure no collision between renamed nonterminals and existing terminals
+        if any(symbol in cfg.terminals for symbol in rename_map.values()):
+            raise ValueError('Renamed nonterminal collides with existing terminal.')
+
         new_rules = {}
         
-        for nonterminal, substitutions in self.rules.items():
+        for nonterminal, substitutions in cfg.rules.items():
             new_subs = []
             for sub in substitutions:
                 # Rename each symbol in substitution, add to list of renamed substitutions
@@ -126,14 +131,65 @@ class CFG:
                 new_subs.append(tuple(rename_map.get(symbol, symbol) for symbol in sub))
             new_rules[rename_map.get(nonterminal, nonterminal)] = tuple(new_subs)
 
-        return CFG(new_rules, rename_map.get(self.start, self.start))
+        return CFG(new_rules, rename_map.get(cfg.start, cfg.start))
 
 
     # Return CFG whose language is the union of the languages of self and other
+    # NOTE can only form union where terminals are equal, TODO allow different terminal sets
     def union(self, other: 'CFG') -> 'CFG':
+        '''
+        Form union of two CFGs by adding a new start symbol S and rule S -> S_1 | S_2
+        - ensure other object is a valid CFG
+        - ensure terminal alphabets match (NOTE may drop this later)
+        - rename nonterminals by appending '_1' for self and '_2'
+            - this necessarily prevents name collisions, and also tracks origin grammar
+        - create new start symbol
+        - form union of rules from both grammars (guaranteed disjoint from above)
+        - add rules so new start symbol can yield both original start symbols
+        - return new grammar
+        '''
         # Check input
         if not isinstance(other, CFG):
             raise TypeError(f'Object \'{other}\' must be a CFG.')
+        
+        # Check nonterminals match
+        '''
+        TODO enable differing nonterminal sets - needs more complex collision checking
+
+        - The reason to ensure alphabets are the same is in case a nonterminal in one CFG doesn't collide with a terminal 
+          in the other
+        - e.g. if `self` has a nonterminal 'R' and `other` has a terminal 'R_1', then after renaming nonterminals there will be a collision
+            - This would mean 'R_1' would always be treated as a nonterminal during symbol extraction, so effectively it would be dropped from 
+              the set of terminals
+            - Such an example is rare (users likely won't use '_i' as a terminal name over single chars), but could still technically happen, 
+              so for now it's just banned
+        '''
+        if set(self.terminals) != set(other.terminals):
+            raise ValueError('Can only form union where CFGs have the same terminals.')
+        
+        # Add indices to all nonterminal names
+        rename_self = {nonterminal: nonterminal + '_1' for nonterminal in self.nonterminals}
+        renamed_self = CFG._rename_symbols(self, rename_self)
+
+        rename_other = {nonterminal: nonterminal + '_2' for nonterminal in self.nonterminals}
+        renamed_other = CFG._rename_symbols(other, rename_other)
+        
+        # Generate new start nonterminal that is not present as a symbol anywhere in either initial CFG
+        new_start = disjoint_symbol('S', set(renamed_self.nonterminals) | 
+                                         set(renamed_self.terminals) | 
+                                         set(renamed_other.nonterminals) | 
+                                         set(renamed_other.terminals))
+
+        # Form union of rules of both CFGs
+        new_rules = {nonterminal: substitutions for nonterminal, substitutions in renamed_self.rules.items()}
+        for nonterminal, substitutions in renamed_other.rules.items():
+            new_rules[nonterminal] = substitutions
+
+        # Add start rule
+        new_rules[new_start] = ((renamed_self.start,), (renamed_other.start,))
+
+        return CFG(new_rules, new_start)
+
 
 
 

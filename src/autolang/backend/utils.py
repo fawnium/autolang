@@ -131,4 +131,15 @@ def disjoint_symbol(target: str,
             return target
         seen.add(target)
 
+# Determine if two collections of strings have non-empty intersection
+def is_collision(collection1: Container[str], 
+                 collection2: Container[str]) -> bool:
+    for s in collection1:
+        if s in collection2:
+            return True
+    for s in collection2:
+        if s in collection1:
+            return True
+    return False
+
     

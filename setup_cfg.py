@@ -36,3 +36,10 @@ cfg4 = CFG(rules4, '<EXPR>')
 # Ambiguous version of cg4
 rules5 = {'<EXPR>': [['<EXPR>', '+', '<EXPR>'], ['<EXPR>', '*', '<EXPR>'], ['(', '<EXPR>', ')'], 'a']}
 cfg5 = CFG(rules5, '<EXPR>')
+
+
+rules6 = {'S': [['0', 'S', '1'], '']}
+cfg6 = CFG(rules6, 'S')
+
+rules7 = {'S': [['1', 'S', '0'], '']}
+cfg7 = CFG(rules7, 'S')
