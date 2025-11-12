@@ -1,3 +1,4 @@
+from autolang.backend.utils import disjoint_symbol
 from autolang.visuals.utils_visuals import eps
 
 from collections.abc import Iterable
@@ -52,6 +53,7 @@ class CFG:
                     canonical_subs.append((sub,))
 
                 elif isinstance(sub, Iterable):
+                    # NOTE in this case `sub` will NOT be a string, since that is caught in above case
                     if not all(isinstance(symbol, str) for symbol in sub):
                         raise TypeError('All terminals and nonterminals must be strings.')
                     canonical_subs.append(tuple(sub))
@@ -68,7 +70,7 @@ class CFG:
         - initialise terminals and nonterminals as sets
         - iterate through rules
             - add each nonterminal (i.e. rule key) to nonterminals
-            - for each substition in each terminal's list of substitutions, add all symbols in the substitution to terminals
+            - for each substition in each nonterminal's list of substitutions, add all symbols in the substitution to terminals
                 - NOTE nonterminals can yield other nonterminals, so these will be filtered out
         - filter out nonterminals from `terminals` to leave only true terminals
         - sort and convert to tuples for return
@@ -103,8 +105,35 @@ class CFG:
     
     def __str__(self):
         return 'CFG with nonterminals {' + ','.join(self.nonterminals) + '} and terminals {' + ','.join(self.terminals) + '}'
-
+    
+    # Rename symbols in CFG
+    def _rename_symbols(self, rename_map: dict[str, str]) -> 'CFG':
+        '''
+        - `rename_map`: keys are current nonterminals, values are the corresponding renamed nonterminals
         
+        Change every symbol instance in rules to its image under rename_map
+        - this applies to both keys and instances within substitutions
+        - NOTE this function can be used to rename terminals for generality, but is only intended for nonterminals
+        - if a symbol does not have an image in rename_map, it stays the same
+        '''
+        new_rules = {}
+        
+        for nonterminal, substitutions in self.rules.items():
+            new_subs = []
+            for sub in substitutions:
+                # Rename each symbol in substitution, add to list of renamed substitutions
+                # Default to original name
+                new_subs.append(tuple(rename_map.get(symbol, symbol) for symbol in sub))
+            new_rules[rename_map.get(nonterminal, nonterminal)] = tuple(new_subs)
+
+        return CFG(new_rules, rename_map.get(self.start, self.start))
+
+
+    # Return CFG whose language is the union of the languages of self and other
+    def union(self, other: 'CFG') -> 'CFG':
+        # Check input
+        if not isinstance(other, CFG):
+            raise TypeError(f'Object \'{other}\' must be a CFG.')
 
 
 

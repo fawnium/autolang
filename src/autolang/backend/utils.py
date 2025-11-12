@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Generator
+from collections.abc import Iterable, Generator, Container, Callable
 import re
 
 '''
@@ -105,3 +105,30 @@ def words_to_length_from_regex(n: int,
                 yield word
 
     return _gen() if lazy else tuple(_gen())
+
+
+# Return string disjoint from given collection of strings
+def disjoint_symbol(target: str, 
+                    collection: Container[str],
+                    rename_map: Callable[[str], str] = lambda s: s + '_0') -> str:
+    '''
+    - `target`: intended string to return
+    - `collection`: collection of strings which target must not intersect with
+    - `rename_map`: specifies how to rename target to make it disjoint
+        - should only make minimal changes to preserve semantics
+
+    - If target is already not in collection, return target
+    - Else rename target until not in collection, then return
+    '''
+    if target not in collection:
+        return target
+    seen = {target}
+    while True:
+        target = rename_map(target)
+        if target in seen:
+            raise RecursionError(f'Renaming produced repeated string \'{target}\', cannot find disjoint name.')
+        if target not in collection:
+            return target
+        seen.add(target)
+
+    
