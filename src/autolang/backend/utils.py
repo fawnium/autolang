@@ -1,4 +1,5 @@
 from collections.abc import Iterable, Generator, Container, Callable
+from typing import Any
 import re
 
 '''
@@ -141,5 +142,20 @@ def is_collision(collection1: Container[str],
         if s in collection1:
             return True
     return False
+
+# Helper to to append entry to a value of a dict
+# NOTE modifies dict in-place, so return is not used
+def _append_dict_value(key: Any, 
+                      entry: Any, 
+                      dic: dict[Any, list[Any]]) -> dict[Any, list[Any]]:
+    '''
+    - If key exists in dic, append entry to it
+    - If key doesn't exist, initialise it with new list [entry]
+    '''
+    if key in dic:
+        dic[key].append(entry)
+    else:
+        dic[key] = [entry]
+    return dic
 
     
