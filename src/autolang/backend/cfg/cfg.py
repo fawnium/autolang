@@ -34,8 +34,8 @@ class CFG:
         self.start = start
 
         # Extract symbol sets
-        self.nonterminals, self.terminals = self._extract()
-
+        self.nonterminals, self.terminals = CFG._extract(self.rules, self.start)
+        
     # Ensure rules dict is correctly formatted and convert containers to tuples for consistency
     def _canonise_rules(self, rules: dict[str, Iterable[Iterable[str] | str]]) -> dict[str, tuple[tuple[str, ...], ...]]:
         '''
@@ -79,7 +79,9 @@ class CFG:
         return canonical
 
     # Establish terminals and nonterminals from rules
-    def _extract(self) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    @staticmethod
+    def _extract(rules: dict[str, tuple[tuple[str, ...], ...]],
+                 start: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
         '''
         - initialise terminals and nonterminals as sets
         - iterate through rules
@@ -94,7 +96,7 @@ class CFG:
         nonterminals = set()
 
         # Extract symbols from rules dict
-        for nonterminal, substitutions in self.rules.items():
+        for nonterminal, substitutions in rules.items():
             nonterminals.add(nonterminal)
             for sub in substitutions:
                 for symbol in sub:
@@ -104,7 +106,7 @@ class CFG:
         terminals = {symbol for symbol in terminals if symbol not in nonterminals and symbol}
 
         # Ensure start nonterminal comes first in sort
-        nonterminals = tuple(sorted(nonterminals, key=lambda s: (s != self.start, s)))
+        nonterminals = tuple(sorted(nonterminals, key=lambda s: (s != start, s)))
         terminals = tuple(sorted(terminals))
         return nonterminals, terminals
     
@@ -247,6 +249,7 @@ class CFG:
         return {nonterminal: tuple(substitutions) for nonterminal, substitutions in filtered_rules.items()}
     
     # Insert new collection of rules to existing rules map
+    # NOTE ONLY for adding new rules for existing nonterminals, NOT for adding new nonterminals
     @staticmethod
     def _add_new_rules(new_rules: dict[str, tuple[tuple[str, ...], ...]],
                        initial_rules: dict[str, tuple[tuple[str, ...], ...]]) -> dict[str, tuple[tuple[str, ...], ...]]:
@@ -273,6 +276,23 @@ class CFG:
             rules_return[nonterminal] = updated
 
         return rules_return
+    
+    # Add new nonterminal (and corresponding rules) to existing rules map
+    @staticmethod
+    def _add_new_nonterminals(new_nonterminals: Container[str],
+                              new_rules: dict[str, tuple[tuple[str, ...], ...]],
+                              initial_rules: dict[str, tuple[tuple[str, ...], ...]]) -> dict[str, tuple[tuple[str, ...], ...]]:
+        '''
+        - `new_nonterminals`: collection of new nonterminals to add to grammar
+        - `new_rules`: substitutions corresponding to new nonterminals
+            - NOTE must be keyed only by new_nonterminals
+        - `initial_rules`: rules map to merge additions into
+
+        Implementation:
+        - ensure new_nonterminals don't collide with any existing symbols
+        - ensure new_rules is keyed correctly
+        - ensure all symbols in new_rules are either: existing terminals
+        '''
     
     # Return list of new rules with each occurrence of given nonterminal removed
     @staticmethod
@@ -423,10 +443,15 @@ class CFG:
     def to_chomsky_normal_form(self) -> 'CFG':
         '''
         Returns a *new* CFG in chomsky normal form via the canonical process:
-        - 
-        
+        - add `new_start` nonterminal and rule 'new_start -> start'
+            - name of new_start must be distinct from all symbols in original CFG
+        - remove all bad ε-rules
+        - remove all unit rules
+        - convert remaining rules to correct form
         '''
+        # Generate distinct new start symbol and initial rule
         new_start = disjoint_symbol('S', set(self.nonterminals) | set(self.terminals))
+        
 
         
     
