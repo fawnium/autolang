@@ -89,7 +89,7 @@ class CFG:
                 - NOTE nonterminals can yield other nonterminals, so these will be filtered out
         - filter out nonterminals from `terminals` to leave only true terminals
         - sort and convert to tuples for return
-        - return `nonterminals`, `terminals`
+        - return (`nonterminals`, `terminals`)
         '''
         terminals = set()
         nonterminals = set()
@@ -279,39 +279,41 @@ class CFG:
     
     # Add new nonterminal (and corresponding rules) to existing rules map
     @staticmethod
-    def _add_new_nonterminals(new_nonterminals: Container[str],
-                              new_rules: dict[str, tuple[tuple[str, ...], ...]],
-                              initial_rules: dict[str, tuple[tuple[str, ...], ...]],
-                              start: str) -> dict[str, tuple[tuple[str, ...], ...]]:
+    def _add_new_nonterminals(new_rules: dict[str, tuple[tuple[str, ...], ...]],
+                              initial_rules: dict[str, tuple[tuple[str, ...], ...]]) -> dict[str, tuple[tuple[str, ...], ...]]:
         '''
-        - `new_nonterminals`: collection of new nonterminals to add to grammar
-        - `new_rules`: substitutions corresponding to new nonterminals
-            - NOTE must be keyed only by new_nonterminals
+        - `new_rules`: collection of new rules, mapping new nonterminals to their respective substitutions
+            - NOTE must be keyed only by new nonterminals
         - `initial_rules`: rules map to merge additions into
         - `start`: start terminal of initial CFG
 
         Implementation:
-        - ensure new_nonterminals don't collide with any existing symbols
-        - ensure new_rules is keyed correctly
+        - ensure new nonterminals (i.e. new_rules keys) don't collide with any existing symbols
         - ensure all symbols in new_rules are either: existing terminals, existing nonterminals, or new nonterminals
             - NOTE in particular, new terminals NOT allowed
+        - merge new_rules into initial_rules by defining keys (guaranteed new keys by above)
         '''
-        existing_nonterminals, existing_terminals = CFG._extract()
+        existing_nonterminals, existing_terminals = CFG._extract(initial_rules)
+        new_nonterminals, new_terminals = CFG._extract(new_rules)
 
-        # Check collisions
+        # Check new nonterminal collisions
         for nonterminal in new_nonterminals:
             if nonterminal in existing_nonterminals or nonterminal in existing_terminals:
                 raise ValueError(f'Cannot add new nonterminal \'{nonterminal}\' as it collides with an existing symbol.')
             
-        # Check keys
-        for key in new_rules:
-            if key not in new_nonterminals:
-                raise ValueError(f'Rule head \'{key}\' is not a recognised new nonterminal.')
-            
         # Check no other new symbols
         # NOTE suffices to check *terminals* in new_rules, as new nonterminals are allowed
-            # 'new terminals' should either be existing terminals or existing nonterminals
-        for new_symbols in CFG._extract(new_rules, )
+        # 'new terminals' should either be existing terminals or existing nonterminals (new nonterminals already filtered out)
+        for new_symbol in new_terminals:
+            if new_symbol not in existing_terminals and new_symbol not in existing_nonterminals:
+                raise ValueError(f'Unrecognised symbol \'{new_symbol}\' in new rule body.')
+            
+        # Merge into return dict
+        rules_return = initial_rules.copy()
+        for new_nonterminal, substitutions in new_rules.items():
+            rules_return[new_nonterminal] = substitutions
+
+        return rules_return
 
     
     # Return list of new rules with each occurrence of given nonterminal removed
