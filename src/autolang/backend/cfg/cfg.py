@@ -1,7 +1,7 @@
 from autolang.backend.utils import disjoint_symbol, _append_dict_value
 from autolang.visuals.utils_visuals import eps
 
-from collections.abc import Iterable, Container
+from collections.abc import Iterable, Container, Generator
 
 '''
 Context-Free Grammar Class
@@ -221,8 +221,7 @@ class CFG:
     # Return all rules that contain given nonterminal in body
     @staticmethod
     def _get_rules_containing(target: str,
-                              rules: dict[str, tuple[tuple[str, ...], ...]], 
-                              all_nonterminals: Container[str]) -> dict[str, tuple[tuple[str, ...], ...]]:
+                              rules: dict[str, tuple[tuple[str, ...], ...]]) -> dict[str, tuple[tuple[str, ...], ...]]:
         '''
         - `target`: symbol to query presence of within substitutions
         - `rules`: map of rules to query
@@ -231,10 +230,10 @@ class CFG:
         Returns dict mapping nonterminals to ONLY its substitutions containing given `target` nonterminal
         - if a nonterminal has no rules containing target, then it does not have a key in dict
         '''
-        # Check input
-        if target not in all_nonterminals:
+        # Check target is a valid nonterminal
+        if target not in rules:
             raise ValueError(f'Symbol \'{target}\' must be a nonterminal.')
-        
+        # Return object
         filtered_rules = {}
 
         for nonterminal, substitutions in rules.items():
@@ -283,87 +282,126 @@ class CFG:
         - `target`: nonterminal whose occurences are to be removed
         - `sub`: rule body to remove occurences from
 
-        Returns tuple of new rule bodies with with each occurence of target removed
+        Returns tuple of new rule bodies with each occurence of target removed
         - e.g. for target 'A' and sub 'uAv', return {'uv'}
         - e.g. for target 'A' and sub 'uAvAw', return {'uvAw', 'uAvw', 'uvw'}
 
         NOTE this function is NOT called when sub only consists of 'target'
+
+        Implementation:
+        - generate `positions` list of all indices that contain `target` in `sub`
+        - for all subsets of `positions` (EXCL empty subset):
+            - yield a new rule body equal to `sub` except with all indices in the subset removed
+        - return all yielded new rule bodies
         '''
-        raise NotImplementedError # TODO !!! Tricky powerset iteration
+        # Initialise collection of return rule bodies with target omitted
+        rules_return = []
+
+        # All occurences of target in sub
+        positions = [i for i, symbol in enumerate(sub) if symbol == target]
+
+        # Helper to generate all subsets of `positions` via recursion
+        # NOTE order doesn't matter since the final rules are sorted anyway
+        def all_subsets(items: list[int]) -> Generator[list[int]]:
+            # Base case
+            if not items:
+                yield []
+            # Recursive case:
+            # Take all subsets of remaining list after first element, and either include or exclude first element
+            else:
+                for subset in all_subsets(items[1:]):
+                    yield subset
+                    yield [items[0]] + subset
+        
+        # For each non-empty subset, add new rule that omits subset indices
+        for subset in all_subsets(positions):
+            # Exclude empty subset - it corresponds to the input `sub`
+            if not subset: continue
+
+            rules_return.append(tuple(symbol for i, symbol in enumerate(sub) if i not in subset))
+
+        # Sort new rules by len-lex and convert to tuple
+        rules_return = tuple(sorted(rules_return, key=lambda rule: (len(rule), rule)))
+        return rules_return
+
     
-
-    # Determine if there are any remaining bad ε-rules
-    @staticmethod
-    def _contains_bad_erules(rules: dict[str, tuple[tuple[str, ...], ...]],
-                             start: str) -> bool:
-        '''
-        - if `rules` contains any sub of the form 'A -> ε' where 'A' != `start`, return True
-        - else return False
-        '''
-        for nonterminal, substitutions in rules.items():
-            if any(sub == ('',) for sub in substitutions) and nonterminal != start:
-                return True
-        return False
-
     # Return rules mapping with bad ε-rules removed
     @staticmethod
     def remove_bad_epsilon_rules(rules: dict[str, tuple[tuple[str, ...], ...]],
-                                 all_nonterminals: Container[str],
-                                 start: str,
-                                 removed: set[str] = {}) -> dict[str, tuple[tuple[str, ...], ...]]:
+                                 start: str) -> dict[str, tuple[tuple[str, ...], ...]]:
         '''
         - `rules`: rules map to remove bad ε-rules from
-        - `all_nonterminals`: collection of CFG's nonterminals (to pass to called helper)
         - `start`: CFG start nonterminal
-        - `removed`: set of nonterminals 'A' for which rule 'A -> ε' was already removed (for recursion)
-            - NOTE only need to track rule head, since '-> ε' already implied
+
+        Construct a new rules map with no bad ε-rules, that generates the same language as `rules`.
+        Use the standard bad ε-rules process:
+        - for all bad ε-rules 'A -> ε':
+            - remove the bad ε-rule and record its removal
+            - for all rules containing 'A' in their body:
+                - add a collection of new rules with the same head, and bodies that omit each occurence of 'A'
+                    - e.g. for 'B -> uAv' add 'B -> uv'
+                    - e.g. for 'B -> uAvAw' add 'B -> uvAw', 'B -> uAvw', 'B -> uvw'
+                    - for special case 'B -> A', add 'B -> ε' UNLESS it was already removed
+        - repeat above until no bad ε-rules remain
         '''
         # Don't modify rules in-place
         rules_return = rules.copy()
 
-        # Determine all nonterminals that have bad ε-rules (in particular NOT including start nonterminal)
-        to_remove = set() # Set of nonterminals 'A' which have a rule 'A -> ε' 
-        for nonterminal, substitutions in rules.items():
+        # Initialise list of bad ε-rules to remove
+        to_remove = [] # List of nonterminals 'A' which have a rule 'A -> ε' 
+        for nonterminal, substitutions in rules_return.items():
             if any(sub == ('',) for sub in substitutions) and nonterminal != start:
-                to_remove.add(nonterminal)
+                to_remove.append(nonterminal)
 
-        # Do replacement process for each nonterminal with bad e-rule
-        for nonterminal in to_remove:
+        # Initialise set of removed bad ε-rules, so they are not re-added
+        # NOTE only need to index by nonterminal, since body ' -> ε' is implied
+        removed = set()
+
+        # Iteratively remove bad ε-rules until none remaining
+        while to_remove:
+            # Choose next bad ε-rule
+            nonterminal = to_remove.pop(0)
+            
             # Remove original bad ε-rule from nonterminal's substitutions
-            rules[nonterminal] = CFG._delete_sub_from_substitutions(('',), rules[nonterminal])
+            rules_return[nonterminal] = CFG._delete_sub_from_substitutions(('',), rules_return[nonterminal])
             removed.add(nonterminal)
 
-            # Add new rules with nonterminal omitted
+            # Add new rules with `nonterminal` omitted
             
+            # Determine all rules which have an occurence of `nonterminal`
             # Maps nonterminals to its respective rules containing `nonterminal`
-            rules_to_add_from = CFG._get_rules_containing(nonterminal, rules, all_nonterminals)
+            rules_to_add_from = CFG._get_rules_containing(nonterminal, rules_return)
 
+            # Initialise collection of rules to replace the rule just removed
             # Maps nonterminals to their respective new rules with `nonterminal` omitted
-            rules_to_add = {}
+            rules_replacement = {}
             
-            # For each rule body, generate new rules with nonterminal omitted
+            # For each rule, generate new rules with nonterminal omitted
             for head, substitutions in rules_to_add_from.items():
                 for sub in substitutions:
+
                     # Edge case for rule 'head -> nonterminal'
                     if sub == (nonterminal,):
                         # Only add new e-rule if not already removed
                         if head not in removed:
-                            _append_dict_value(head, '', rules_to_add)
+                            _append_dict_value(head, ('',), rules_replacement)
+                            # If not the start nonterminal, schedule new ε-rule for removal in later iteration
+                            # and ensure no duplicates in worklist
+                            if head != start and head not in to_remove:
+                                to_remove.append(head)
+
                     # Case for NOT 'head -> nonterminal'
                     else:
+                        # Generate new rules with each occurence of nonterminal omitted, and schedule them to add
                         new_rules = CFG._remove_occurences_of(nonterminal, sub)
                         for new_rule in new_rules:
-                            _append_dict_value(head, new_rule, rules_to_add)
+                            _append_dict_value(head, new_rule, rules_replacement)
 
             # Convert list of new rules to tuple before adding
-            rules_to_add = {key: tuple(val) for key, val in rules_to_add.items()}
-            # Add new rules with nonterminal omitted
-            rules_return = CFG._add_new_rules(rules_to_add, rules_return)
+            rules_replacement = {key: tuple(val) for key, val in rules_replacement.items()}
+            # Add new rules with nonterminal omitted (NOTE duplicates are ignored)
+            rules_return = CFG._add_new_rules(rules_replacement, rules_return)
 
-        # Check if another pass needed to remove added ε-rules
-        # Likely will be needed at first, but should always terminate
-        if CFG._contains_bad_erules(rules_return, start):
-            rules_return = CFG.remove_bad_epsilon_rules(rules_return, all_nonterminals, start, removed)
         return rules_return
 
     # Return rules mapping with unit rules 'A -> B' removed
@@ -383,9 +421,14 @@ class CFG:
 
     # Convert grammar to Chomsky normal form
     def to_chomsky_normal_form(self) -> 'CFG':
+        '''
+        Returns a *new* CFG in chomsky normal form via the canonical process:
+        - 
+        
+        '''
         new_start = disjoint_symbol('S', set(self.nonterminals) | set(self.terminals))
 
-        raise NotImplementedError
+        
     
         # Sketch outline
         new_rules = CFG.remove_bad_epsilon_rules(self.rules, self.nonterminals, self.start)
@@ -393,6 +436,8 @@ class CFG:
         new_rules = CFG.convert_proper_form(new_rules, self.nonterminals, self.start)
         # Rule to yield initial start from new start
         new_rules[new_start] = ((self.start,),)
+
+        raise NotImplementedError
         
         return CFG(new_rules, new_start)
 
