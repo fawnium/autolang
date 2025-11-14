@@ -148,8 +148,64 @@ class TestCanoniseRules(unittest.TestCase):
     # TODO test different container types
 
 
+# NOTE _extract() is only called on rules that are already canonised and syntactically valid
 class TestExtract(unittest.TestCase):
-    pass
+
+    def test_empty_cfg(self):
+        rules = {}
+        self.assertEqual(CFG._extract(rules), (tuple(), tuple()))
+
+    def test_single_rule(self):
+        rules = {'A': (('a',),)}
+        self.assertEqual(CFG._extract(rules), (('A',), ('a',)))
+
+    def test_multiple_rules_single_nonterminal(self):
+        rules = {'A': (('a',), ('b',), ('c', 'd'))}
+        self.assertEqual(CFG._extract(rules), (('A',), ('a', 'b', 'c', 'd')))
+
+    def test_multiple_nonterminals(self):
+        rules = {'A': (('a',),),
+                 'B': (('b',),)}
+        self.assertEqual(CFG._extract(rules), (('A', 'B'), ('a', 'b')))
+
+    def test_nonterminal_in_body(self):
+        # In body of self
+        rules = {'A': (('a',), ('A',), ('b',))}
+        self.assertEqual(CFG._extract(rules), (('A',), ('a', 'b')))
+
+        # In body of other nonterminal
+        rules1 = {'A': (('a',), ('b', 'c')),
+                  'B': (('a', 'A'),)}
+        self.assertEqual(CFG._extract(rules1), (('A', 'B'), ('a', 'b', 'c')))
+
+    def test_sorting(self):
+        rules = {'A': (('b',), ('c',), ('a',))}
+        self.assertEqual(CFG._extract(rules), (('A',), ('a', 'b', 'c')))
+
+    def test_empty_symbol_dropped(self):
+        rules = {'A': (('a',), ('',))}
+        self.assertEqual(CFG._extract(rules), (('A',), ('a',)))
+
+    def test_deduplication(self):
+        rules = {'A': (('a', 'b'),),
+                 'B': (('b', 'c'),),
+                 'C': (('c', 'a'),)}
+        self.assertEqual(CFG._extract(rules), (('A', 'B', 'C'), ('a', 'b', 'c')))
+
+    def test_no_terminals(self):
+        rules = {'A': (('B',), ('B', 'A')),
+                 'B': (('A',), ('B', 'A'))}
+        self.assertEqual(CFG._extract(rules), (('A', 'B'), tuple()))
+
+    def test_mixed_case(self):
+        rules = {'A': (('B', 'a'), ('b', 'A'), ('c',), ('',)),
+                 'B': (('A',), ('A', 'B'), ('A', 'c'))}
+        self.assertEqual(CFG._extract(rules), (('A', 'B'), ('a', 'b', 'c')))
+
+
+
+    
+
 
 
 

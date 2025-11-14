@@ -116,7 +116,8 @@ class CFG:
                 - NOTE nonterminals can yield other nonterminals, so these will be filtered out
         - filter out nonterminals from `terminals` to leave only true terminals
         - sort and convert to tuples for return
-        - return (`nonterminals`, `terminals`)
+
+        Return: (`nonterminals`, `terminals`)
         '''
         terminals = set()
         nonterminals = set()
