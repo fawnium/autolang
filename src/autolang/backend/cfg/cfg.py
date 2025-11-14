@@ -355,13 +355,13 @@ class CFG:
     
     # Return list of new rules with each occurrence of given nonterminal removed
     @staticmethod
-    def _remove_occurences_of(target: str,
+    def _remove_occurrences_of(target: str,
                               sub: tuple[str, ...]) -> tuple[tuple[str, ...], ...]:
         '''
-        - `target`: nonterminal whose occurences are to be removed
-        - `sub`: rule body to remove occurences from
+        - `target`: nonterminal whose occurrences are to be removed
+        - `sub`: rule body to remove occurrences from
 
-        Returns tuple of new rule bodies with each occurence of target removed
+        Returns tuple of new rule bodies with each occurrence of target removed
         - e.g. for target 'A' and sub 'uAv', return {'uv'}
         - e.g. for target 'A' and sub 'uAvAw', return {'uvAw', 'uAvw', 'uvw'}
 
@@ -376,7 +376,7 @@ class CFG:
         # Initialise collection of return rule bodies with target omitted
         rules_return = []
 
-        # All occurences of target in sub
+        # All occurrences of target in sub
         positions = [i for i, symbol in enumerate(sub) if symbol == target]
 
         # Helper to generate all subsets of `positions` via recursion
@@ -417,7 +417,7 @@ class CFG:
         - for all bad ε-rules 'A -> ε':
             - remove the bad ε-rule and record its removal
             - for all rules containing 'A' in their body:
-                - add a collection of new rules with the same head, and bodies that omit each occurence of 'A'
+                - add a collection of new rules with the same head, and bodies that omit each occurrence of 'A'
                     - e.g. for 'B -> uAv' add 'B -> uv'
                     - e.g. for 'B -> uAvAw' add 'B -> uvAw', 'B -> uAvw', 'B -> uvw'
                     - for special case 'B -> A', add 'B -> ε' UNLESS it was already removed
@@ -447,7 +447,7 @@ class CFG:
 
             # Add new rules with `nonterminal` omitted
             
-            # Determine all rules which have an occurence of `nonterminal`
+            # Determine all rules which have an occurrence of `nonterminal`
             # Maps nonterminals to its respective rules containing `nonterminal`
             rules_to_add_from = CFG._get_rules_containing(nonterminal, rules_return)
 
@@ -471,8 +471,8 @@ class CFG:
 
                     # Case for NOT 'head -> nonterminal'
                     else:
-                        # Generate new rules with each occurence of nonterminal omitted, and schedule them to add
-                        new_rules = CFG._remove_occurences_of(nonterminal, sub)
+                        # Generate new rules with each occurrence of nonterminal omitted, and schedule them to add
+                        new_rules = CFG._remove_occurrences_of(nonterminal, sub)
                         for new_rule in new_rules:
                             _append_dict_value(head, new_rule, rules_replacement)
 
