@@ -1,7 +1,7 @@
 from autolang.backend.utils import disjoint_symbol, _append_dict_value
 from autolang.visuals.utils_visuals import eps
 
-from collections.abc import Iterable, Container, Generator
+from collections.abc import Iterable, Container, Generator, Sequence
 
 '''
 Context-Free Grammar Class
@@ -38,17 +38,28 @@ class CFG:
         
     # Ensure rules dict is correctly formatted and convert containers to tuples for consistency
     @staticmethod
-    def _canonise_rules(rules: dict[str, Iterable[Iterable[str] | str]]) -> dict[str, tuple[tuple[str, ...], ...]]:
+    def _canonise_rules(rules: dict[str, Iterable[Sequence[str] | str]]) -> dict[str, tuple[tuple[str, ...], ...]]:
         '''
         - iterate through each str: Iterable pair in rules dict
-        - the parent Iterable is a list of substitutions for the given nonterminal str
-        - elements of the parent iterable can either be literal strings, or collections of strings
+            - NOTE strings NOT allowed as dict values, even though they are iterable
+        - the parent Iterable is a list of substitutions (i.e. rule bodies) for the given nonterminal str
+            - NOTE empty iterable IS allowed even though it means nonterminal can't yield anything
+        - elements of the parent iterable can either be literal strings (unit rule), or collection of strings (compound rule)
             - NOTE a literal string is interpreted as a single symbol, NOT a concatenation of multiple symbols
+            - NOTE a collection of strings must be ordered to preserve rule semantics
         - for each element in parent Iterable:
             - if it is a string, wrap in tuple and add to canonical substitutions
-                - This is a unit rule case
-            - if it is an iterable and NOT a string, convert to tuple and add to canonical
-                - This is a non-unit rule, i.e. nonterminal substituted for multiple new symbols
+            - if it is an sequence and NOT a string:
+                - if empty, interpret as e-rule
+                    - NOTE the correct e-rule syntax is tuple('') NOT tuple(), but users may expect the latter
+                - ensure no '' symbol if compound rule
+                    - e.g. " A -> 'u','','v' " - '' adds nothing and could cause unexpected behaviour
+                - convert to tuple and add to canonical substitutions
+        - for each nonterminal:
+            - deduplicate canonical substitutions (repeated rules are redundant)
+            - sort in lenlex order
+            - convert to tuple
+            - assign to final dict entry
         '''
         if not isinstance(rules, dict):
             raise TypeError('CFG rules must be a dict mapping nonterminals to rules.')
@@ -60,6 +71,9 @@ class CFG:
                 raise TypeError(f'Nonterminal \'{nonterminal}\' must be a string.')
             if not isinstance(substitutions, Iterable):
                 raise TypeError(f'Substitutions for nonterminal \'{nonterminal}\' must be iterable.')
+            # String as value not allowed (TODO allow if unambiguous?)
+            if isinstance(substitutions, str):
+                raise TypeError(f'Rule body \'{substitutions}\' must be inside an iterable.')
             
             canonical_subs = [] # Substitutions to be converted, final type will be tuple[tuple[str, ...]]
 
@@ -68,14 +82,24 @@ class CFG:
                     # NOTE using tuple() directly would separate chars into individual entries, which is not intended
                     canonical_subs.append((sub,))
 
-                elif isinstance(sub, Iterable):
-                    # NOTE in this case `sub` will NOT be a string, since that is caught in above case
+                # NOTE in this case `sub` will NOT be a string, since that is caught in above case
+                elif isinstance(sub, Sequence):
+                    # Ensure all strings
                     if not all(isinstance(symbol, str) for symbol in sub):
                         raise TypeError('All terminals and nonterminals must be strings.')
+                    
+                    # Convert empty sub to ('',)
+                    if len(sub) == 0:
+                        sub = ('',)
+                    
+                    # Ensure no '' in compound rule
+                    if len(sub) > 1 and '' in sub:
+                        raise ValueError(f'Empty symbol \'\' not allowed in non-unit rule.')
+
                     canonical_subs.append(tuple(sub))
 
                 else:
-                    raise TypeError(f'Substitution \'{sub}\' must be iterable.')
+                    raise TypeError(f'Rule body \'{sub}\' must be an ordered collection of strings.')
                 
             # Remove duplicate subs, sort by lenlex, convert to tuple
             canonical[nonterminal] = tuple(sorted(set(canonical_subs), key=lambda sub: (len(sub), sub)))

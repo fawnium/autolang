@@ -16,9 +16,13 @@ class TestInit(unittest.TestCase):
 class TestCanoniseRules(unittest.TestCase):
 
     # Trivial CFG allowed currently
-    def test_empty(self):
+    def test_empty_cfg(self):
         rules = {}
         self.assertEqual(CFG._canonise_rules(rules), {})
+
+    def test_empty_rules(self):
+        rules = {'A': []}
+        self.assertEqual(CFG._canonise_rules(rules), {'A': tuple()})
 
     def test_erule(self):
         # Unwrapped
@@ -28,6 +32,11 @@ class TestCanoniseRules(unittest.TestCase):
         # Wrapped
         rules = {'A': [['']]}
         self.assertEqual(CFG._canonise_rules(rules), {'A': (('',),)})
+
+    # Should be converted to conventional epsilon encoding
+    def test_empty_sub(self):
+        rules = {'A': [[], ['a']]}
+        self.assertEqual(CFG._canonise_rules(rules), {'A': (('',), ('a',))})
 
     def test_single_unit_rule(self):
         # Unwrapped symbol
@@ -47,7 +56,7 @@ class TestCanoniseRules(unittest.TestCase):
         rules = {'A': ['a', ['b', 'c'], ['d']]}
         self.assertEqual(CFG._canonise_rules(rules), {'A': (('a',), ('d',), ('b', 'c'))})
 
-    def test_nonduplication(self):
+    def test_deduplication(self):
         # Unit rule
         rules = {'A': ['a', 'a', ['a']]}
         self.assertEqual(CFG._canonise_rules(rules), {'A': (('a',),)})
@@ -56,9 +65,13 @@ class TestCanoniseRules(unittest.TestCase):
         rules1 = {'A': [['a', 'b'], ['a', 'b']]}
         self.assertEqual(CFG._canonise_rules(rules1), {'A': (('a', 'b'),)})
 
+        # e-rule
+        rules2 = {'A': ['', [''], [], []]}
+        self.assertEqual(CFG._canonise_rules(rules2), {'A': (('',),)})
+
         # Should NOT deduplicate as order is important
-        rules2 = {'A': [['a', 'b'], ['b', 'a']]}
-        self.assertEqual(CFG._canonise_rules(rules2), {'A': (('a', 'b'), ('b', 'a'))})
+        rules3 = {'A': [['a', 'b'], ['b', 'a']]}
+        self.assertEqual(CFG._canonise_rules(rules3), {'A': (('a', 'b'), ('b', 'a'))})
 
     def test_sorting(self):
         # Use set for nondeterministic ordering
@@ -81,7 +94,6 @@ class TestCanoniseRules(unittest.TestCase):
         self.assertEqual(CFG._canonise_rules(rules), {'A': (('a',), ('b', 'c')), 'B': (('d',), ('e', 'f'))})
 
 
-
     # Invalid input
 
     def test_not_dict(self):
@@ -99,12 +111,22 @@ class TestCanoniseRules(unittest.TestCase):
         with self.assertRaises(TypeError):
             CFG._canonise_rules(rules)
 
-    # TODO ordered NOT just iterable!
-    def test_sub_not_iterable(self):
-        rules = {'A': [1, ['a','b']]} # First sub fails, 2nd correct
+    def test_sub_not_sequence(self):
+        # Sub not even container
+        rules = {'A': [1]}
         with self.assertRaises(TypeError):
             CFG._canonise_rules(rules)
 
+        # Sub container but not ordered
+        rules1 = {'A': [{'a', 'b'}]}
+        with self.assertRaises(TypeError):
+            CFG._canonise_rules(rules1)
+
+    def test_epsilon_in_compound_rule(self):
+        rules = {'A': [['a', '', 'b']]}
+        with self.assertRaises(ValueError):
+            CFG._canonise_rules(rules)
+        
     def test_nonstring_symbol(self):
         rules = {'A': [[1, 'a']]}
         with self.assertRaises(TypeError):
@@ -115,6 +137,19 @@ class TestCanoniseRules(unittest.TestCase):
         with self.assertRaises(TypeError):
             CFG._canonise_rules(rules)
 
+        rules1 = {'A': [['a', []]]}
+        with self.assertRaises(TypeError):
+            CFG._canonise_rules(rules1)
+
+        rules2 = {'A': [['a', ['b']]]}
+        with self.assertRaises(TypeError):
+            CFG._canonise_rules(rules2)
+
+    # TODO test different container types
+
+
+class TestExtract(unittest.TestCase):
+    pass
 
 
 
