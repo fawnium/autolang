@@ -240,16 +240,16 @@ class TestGetRulesContaining(unittest.TestCase):
         rules = {'A': (('a',), ('A',))}
         self.assertEqual(CFG._get_rules_containing('A', rules), {'A': (('A',),)})
 
-        # As compound rule, one occurence per rule
+        # As compound rule, one occurrence per rule
         rules1 = {'A': (('a',), ('a', 'A'), ('A', 'b', 'a'))}
         self.assertEqual(CFG._get_rules_containing('A', rules1), {'A': (('a', 'A'), ('A', 'b', 'a'))})
 
-        # As compound, multiple occurences per rule
+        # As compound, multiple occurrences per rule
         rules2 = {'A': (('a',), ('A', 'A'), ('A', 'a', 'A'), ('A',), ('',))}
         self.assertEqual(CFG._get_rules_containing('A', rules2), {'A': (('A', 'A'), ('A', 'a', 'A'), ('A',))})
 
     def test_multiple_nonterminals(self):
-        # Only one occurence of each nonterminal per rule - multiple should be covered in above
+        # Only one occurrence of each nonterminal per rule - multiple should be covered in above
         rules = {'A': (('a',), ('a', 'A'), ('B', 'a', 'A'), ('C',)),
                  'B': (('',), ('B', 'a'), ('A', 'a'), ('a', 'C')),
                  'C': (('a', 'A', 'B'), ('',), ('C', 'a'), ('a', 'A'))}
@@ -373,8 +373,108 @@ class TestRemoveOccurrencesOf(unittest.TestCase):
 
 class TestRemoveBadEpsilonRules(unittest.TestCase):
 
-    pass
+    # NOTE changing the order of rule bodies in tuple may fail tests
+    # even though the grammar would still be correct
 
+    def test_no_erules(self):
+        rules = {'S': (('A',), ('B',)),
+                 'A': (('a',),),
+                 'B': (('b',),)}
+        expected = rules
+        self.assertEqual(CFG.remove_bad_epsilon_rules(rules, 'S'), expected)
+
+    def test_good_erule(self):
+        rules = {'S': (('',), ('A',)),
+                 'A': (('a',), ('a', 'A'))}
+        expected = rules
+        self.assertEqual(CFG.remove_bad_epsilon_rules(rules, 'S'), expected)
+
+    def test_single_bad_erule(self):
+        # Only one rule for bad nonterminal
+        rules = {'S': (('A',), ('B',)),
+                 'A': (('',),),
+                 'B': (('b',),)}
+        expected = {'S': (('',), ('A',), ('B',)),
+                    'A': tuple(),
+                    'B': (('b',),)}
+        self.assertEqual(CFG.remove_bad_epsilon_rules(rules, 'S'), expected)
+
+        # Additional rules for bad nonterminal
+        rules1 = {'S': (('A',), ('B',)),
+                 'A': (('',), ('b',)),
+                 'B': (('b',),)}
+        expected1 = {'S': (('',), ('A',), ('B',)),
+                    'A': (('b',),),
+                    'B': (('b',),)}
+        self.assertEqual(CFG.remove_bad_epsilon_rules(rules1, 'S'), expected1)
+
+    # Multiple rules with bad nonterminal, one occurrence per rule
+    def test_single_bad_erule_different_occurrences(self):
+        rules = {'S': (('A',), ('B',),),
+                 'A': (('',),),
+                 'B': (('b',), ('b', 'A'), ('A', 'c'))} # New rule ('b',) should be deduplicated
+        expected = {'S': (('',), ('A',), ('B',)),
+                    'A': tuple(),
+                    'B': (('b',), ('c',), ('A', 'c'), ('b', 'A'))}
+        self.assertEqual(CFG.remove_bad_epsilon_rules(rules, 'S'), expected)
+
+    # Single rule with bad nonterminal, multiple occurences in rule
+    def test_single_bad_erule_multiple_occurrences(self):
+        rules = {'S': (('u', 'A', 'v', 'A', 'w'),),
+                 'A': (('',),)}
+        expected = {'S': (('u', 'v', 'w'), ('u', 'A', 'v', 'w'), 
+                          ('u', 'v', 'A', 'w'), ('u', 'A', 'v', 'A', 'w')),
+                    'A': tuple()}
+        self.assertEqual(CFG.remove_bad_epsilon_rules(rules, 'S'), expected)
+
+    # Bad nonterminal yields itself
+    def test_single_bad_erule_self_occurrence(self):
+        # Self-yield is compound rule
+        rules = {'S': (('A',), ('a',)),
+                 'A': (('',), ('A', 'a'))}
+        expected = {'S': (('',), ('A',), ('a',)),
+                    'A': (('a',), ('A', 'a'))}
+        self.assertEqual(CFG.remove_bad_epsilon_rules(rules, 'S'), expected)
+
+        # Self-yield is unit rule
+        rules1 = {'S': (('A',), ('a',)),
+                 'A': (('',), ('A',), ('a',))}
+        # Bad erule not re-added: 'A -> A' should induce 'A -> ε', but was already removed
+        expected1 = {'S': (('',), ('A',), ('a',)),
+                    'A': (('A',), ('a',),)} 
+        self.assertEqual(CFG.remove_bad_epsilon_rules(rules1, 'S'), expected1)
+
+    def test_recursive_remove(self):
+        rules = {'S': (('A',),),
+                 'A': (('B',),),
+                 'B': (('C',),),
+                 'C': (('',), ('c',))}
+        expected = {'S': (('',), ('A',)),
+                    'A': (('B',),),
+                    'B': (('C',),),
+                    'C': (('c',),)}
+        self.assertEqual(CFG.remove_bad_epsilon_rules(rules, 'S'), expected)
+
+    def test_removed_not_readded(self):
+        # If 'B -> ε' removed first, shouldn't be re-added when 'A -> ε' removed, and vice versa
+        rules = {'S': (('A',), ('B',)),
+                 'A': (('',), ('B',), ('a',)),
+                 'B': (('',), ('A',), ('b',))}
+        expected = {'S': (('',), ('A',), ('B',)),
+                    'A': (('B',), ('a',)),
+                    'B': (('A',), ('b',))}
+        self.assertEqual(CFG.remove_bad_epsilon_rules(rules, 'S'), expected)
+
+    def test_multiple_bad_erules(self):
+        rules = {'S': (('A',), ('B', 'C')),
+                 'A': (('',), ('a',), ('a', 'b'), ('a', 'B')),
+                 'B': (('',), ('C', 'b'), ('A',)),
+                 'C': (('',), ('A', 'B'), ('c',))}
+        expected = {'S': (('',), ('A',), ('B',), ('C',), ('B', 'C')),
+                    'A': (('a',), ('a', 'B'), ('a', 'b')),
+                    'B': (('A',), ('b',), ('C', 'b')),
+                    'C': (('A',), ('B',), ('c',), ('A', 'B'))}
+        self.assertEqual(CFG.remove_bad_epsilon_rules(rules, 'S'), expected)
 
 
 if __name__ == '__main__':
