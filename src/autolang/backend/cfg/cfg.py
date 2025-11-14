@@ -34,7 +34,7 @@ class CFG:
         self.start = start
 
         # Extract symbol sets
-        self.nonterminals, self.terminals = CFG._extract(self.rules, self.start)
+        self.nonterminals, self.terminals = CFG._extract(self.rules)
         
     # Ensure rules dict is correctly formatted and convert containers to tuples for consistency
     @staticmethod
@@ -50,6 +50,9 @@ class CFG:
             - if it is an iterable and NOT a string, convert to tuple and add to canonical
                 - This is a non-unit rule, i.e. nonterminal substituted for multiple new symbols
         '''
+        if not isinstance(rules, dict):
+            raise TypeError('CFG rules must be a dict mapping nonterminals to rules.')
+
         canonical = {} # Initialise canonical dict
         for nonterminal, substitutions in rules.items():
 
@@ -74,9 +77,8 @@ class CFG:
                 else:
                     raise TypeError(f'Substitution \'{sub}\' must be iterable.')
                 
-            # Sort rule bodies by default order: len-lex of symbols in sub
-            # TODO is it actually sorting?
-            canonical[nonterminal] = tuple(sorted(canonical_subs))
+            # Remove duplicate subs, sort by lenlex, convert to tuple
+            canonical[nonterminal] = tuple(sorted(set(canonical_subs), key=lambda sub: (len(sub), sub)))
         return canonical
 
     # Establish terminals and nonterminals from rules

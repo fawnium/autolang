@@ -68,6 +68,15 @@ class TestWordsToLengthFromRegex(unittest.TestCase):
     # This func is essentially native python, so I think testing it is somewhat circular
     pass
 
+class TestDisjointSymbol(unittest.TestCase):
+    pass
+
+class TestIsCollision(unittest.TestCase):
+    pass
+
+class TestAppendDictValue(unittest.TestCase):
+    pass
+
 
 if __name__ == '__main__':
     unittest.main()
