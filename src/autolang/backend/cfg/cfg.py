@@ -26,7 +26,7 @@ class CFG:
         - `start`: start nonterminal, must be included in rules
         '''
         # Convert rules to standard form
-        self.rules = self._canonise_rules(rules)
+        self.rules = CFG._canonise_rules(rules)
         
         # Check start is listed as a nonterminal
         if start not in rules:
@@ -37,7 +37,8 @@ class CFG:
         self.nonterminals, self.terminals = CFG._extract(self.rules, self.start)
         
     # Ensure rules dict is correctly formatted and convert containers to tuples for consistency
-    def _canonise_rules(self, rules: dict[str, Iterable[Iterable[str] | str]]) -> dict[str, tuple[tuple[str, ...], ...]]:
+    @staticmethod
+    def _canonise_rules(rules: dict[str, Iterable[Iterable[str] | str]]) -> dict[str, tuple[tuple[str, ...], ...]]:
         '''
         - iterate through each str: Iterable pair in rules dict
         - the parent Iterable is a list of substitutions for the given nonterminal str
