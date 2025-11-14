@@ -2,6 +2,17 @@ import unittest
 
 from autolang.backend.cfg.cfg import CFG
 
+class TestInit(unittest.TestCase):
+
+    def test_invalid_start(self):
+        rules = {'A': ['a'], 'B': ['b']}
+        with self.assertRaises(ValueError):
+            CFG(rules, 'C')
+
+    # rules init handled by _canonise_rules()
+    # nonterminals and terminals init handled by _extract()
+
+
 class TestCanoniseRules(unittest.TestCase):
 
     # Trivial CFG allowed currently
