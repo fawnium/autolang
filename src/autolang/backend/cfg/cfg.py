@@ -159,6 +159,7 @@ class CFG:
         return 'CFG with nonterminals {' + ','.join(self.nonterminals) + '} and terminals {' + ','.join(self.terminals) + '}'
     
     # Rename symbols in CFG
+    # TODO better collision checking
     @staticmethod
     def _rename_symbols(cfg: 'CFG', rename_map: dict[str, str]) -> 'CFG':
         '''
@@ -188,6 +189,7 @@ class CFG:
 
     # Return CFG whose language is the union of the languages of self and other
     # NOTE can only form union where terminals are equal, TODO allow different terminal sets
+    # TODO better collision checks!
     def union(self, other: 'CFG') -> 'CFG':
         '''
         Form union of two CFGs by adding a new start symbol S and rule S -> S_1 | S_2
@@ -215,6 +217,8 @@ class CFG:
               the set of terminals
             - Such an example is rare (users likely won't use '_i' as a terminal name over single chars), but could still technically happen, 
               so for now it's just banned
+
+        TODO there are still possible collisions I think
         '''
         if set(self.terminals) != set(other.terminals):
             raise ValueError('Can only form union where CFGs have the same terminals.')
@@ -260,7 +264,6 @@ class CFG:
         '''
         - `target`: symbol to query presence of within substitutions
         - `rules`: map of rules to query
-        - `all_nonterminals`: collection of all nonterminals of CFG, to check valid input
 
         Returns dict mapping nonterminals to ONLY its substitutions containing given `target` nonterminal
         - if a nonterminal has no rules containing target, then it does not have a key in dict
@@ -482,14 +485,12 @@ class CFG:
     # Return rules mapping with unit rules 'A -> B' removed
     @staticmethod
     def remove_unit_rules(rules: dict[str, tuple[tuple[str, ...], ...]],
-                          all_nonterminals: Container[str],
                           start: str) -> dict[str, tuple[tuple[str, ...], ...]]:
         raise NotImplementedError
     
     # Return rules with all bodies converted to normal form by introducting new nonterminals
     @staticmethod
     def convert_proper_form(rules: dict[str, tuple[tuple[str, ...], ...]],
-                            all_nonterminals: Container[str],
                             start: str) -> dict[str, tuple[tuple[str, ...], ...]]:
         raise NotImplementedError
 

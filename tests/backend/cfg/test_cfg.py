@@ -208,6 +208,67 @@ class TestExtract(unittest.TestCase):
         self.assertEqual(CFG._extract(rules), (('A', 'B'), ('a', 'b', 'c')))
 
 
+class TestRenameSymbols(unittest.TestCase):
+
+    pass # TODO only after method has been rewritten
+
+
+class TestUnion(unittest.TestCase):
+
+    pass # TODO along with _rename_symbols
+
+
+class TestDeleteSubFromSubstitutions(unittest.TestCase):
+
+    def test_missing_target(self):
+        subs = (('a',), ('b',), ('c',))
+        target = ('d',)
+        with self.assertRaises(ValueError):
+            CFG._delete_sub_from_substitutions(target, subs)
+
+    def test_present_target(self):
+        subs = (('a',), ('b',), ('c',))
+        self.assertEqual(CFG._delete_sub_from_substitutions(('a',), subs), (('b',), ('c',)))
+        self.assertEqual(CFG._delete_sub_from_substitutions(('b',), subs), (('a',), ('c',)))
+        self.assertEqual(CFG._delete_sub_from_substitutions(('c',), subs), (('a',), ('b',)))
+
+
+class TestGetRulesContaining(unittest.TestCase):
+
+    def test_single_nonterminal(self):
+        # As unit rule
+        rules = {'A': (('a',), ('A',))}
+        self.assertEqual(CFG._get_rules_containing('A', rules), {'A': (('A',),)})
+
+        # As compound rule, one occurence per rule
+        rules1 = {'A': (('a',), ('a', 'A'), ('A', 'b', 'a'))}
+        self.assertEqual(CFG._get_rules_containing('A', rules1), {'A': (('a', 'A'), ('A', 'b', 'a'))})
+
+        # As compound, multiple occurences per rule
+        rules2 = {'A': (('a',), ('A', 'A'), ('A', 'a', 'A'), ('A',), ('',))}
+        self.assertEqual(CFG._get_rules_containing('A', rules2), {'A': (('A', 'A'), ('A', 'a', 'A'), ('A',))})
+
+    def test_multiple_nonterminals(self):
+        # Only one occurence of each nonterminal per rule - multiple should be covered in above
+        rules = {'A': (('a',), ('a', 'A'), ('B', 'a', 'A'), ('C',)),
+                 'B': (('',), ('B', 'a'), ('A', 'a'), ('a', 'C')),
+                 'C': (('a', 'A', 'B'), ('',), ('C', 'a'), ('a', 'A'))}
+        
+        expected_A = {'A': (('a', 'A'), ('B', 'a', 'A')),
+                      'B': (('A', 'a'),),
+                      'C': (('a', 'A', 'B'), ('a', 'A'))}
+        expected_B = {'A': (('B', 'a', 'A'),),
+                      'B': (('B', 'a'),),
+                      'C': (('a', 'A', 'B'),)}
+        expected_C = {'A': (('C',),),
+                      'B': (('a', 'C'),),
+                      'C': (('C', 'a'),)}
+        self.assertEqual(CFG._get_rules_containing('A', rules), expected_A)
+        self.assertEqual(CFG._get_rules_containing('B', rules), expected_B)
+        self.assertEqual(CFG._get_rules_containing('C', rules), expected_C)
+
+
+
 
     
 
