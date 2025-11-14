@@ -308,8 +308,9 @@ class CFG:
 
         # Update substitutions for each nonterminal
         for nonterminal in new_rules:
-            # Merged tuple of initial and new rules, without duplicates
-            updated = tuple(sorted(set(initial_rules[nonterminal]) | set(new_rules[nonterminal])))
+            # Merged tuple of initial and new rules, without duplicates, sort by lenlex
+            updated = tuple(sorted(set(initial_rules[nonterminal]) | set(new_rules[nonterminal]), 
+                                   key=lambda rule: (len(rule), rule)))
             # Update substitutions in final rules map
             rules_return[nonterminal] = updated
 
