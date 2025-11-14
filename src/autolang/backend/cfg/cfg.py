@@ -314,12 +314,13 @@ class CFG:
         return rules_return
     
     # Add new nonterminal (and corresponding rules) to existing rules map
+    # NOTE cannot be used to add rules for existing nonterminals
     @staticmethod
     def _add_new_nonterminals(new_rules: dict[str, tuple[tuple[str, ...], ...]],
                               initial_rules: dict[str, tuple[tuple[str, ...], ...]]) -> dict[str, tuple[tuple[str, ...], ...]]:
         '''
         - `new_rules`: collection of new rules, mapping new nonterminals to their respective substitutions
-            - NOTE must be keyed only by new nonterminals
+            - NOTE must be keyed only by NEW nonterminals
         - `initial_rules`: rules map to merge additions into
         - `start`: start terminal of initial CFG
 

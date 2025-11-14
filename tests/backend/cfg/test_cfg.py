@@ -296,12 +296,56 @@ class TestAddNewRules(unittest.TestCase):
                                                                         'B': (('c',), ('d',), ('y',)),
                                                                         'C': (('e',), ('f',))})
 
+    # New nonterminals added via .add_new_nonterminals()
     def test_invalid_nonterminal(self):
         initial_rules = {'A': (('a',), ('b',))}
         new_rules = {'X': (('c',),)}
         with self.assertRaises(ValueError):
             CFG._add_new_rules(new_rules, initial_rules)
 
+
+class TestAddNewNonterminals(unittest.TestCase):
+
+    def test_single_new_nonterminal(self):
+        initial_rules = {'A': (('a',),)}
+        new_rules = {'B': (('a',),)}
+        self.assertEqual(CFG._add_new_nonterminals(new_rules, initial_rules), {'A': (('a',),),
+                                                                               'B': (('a',),)})
+
+    def test_multiple_new_nonterminals(self):
+        initial_rules = {'A': (('a',),)}
+        new_rules = {'B': (('a',),),
+                     'C': (('a',),)}
+        self.assertEqual(CFG._add_new_nonterminals(new_rules, initial_rules), {'A': (('a',),),
+                                                                               'B': (('a',),),
+                                                                               'C': (('a',),)})
+        
+    def test_existing_terminal_in_body(self):
+        initial_rules = {'A': (('a',),)}
+        new_rules = {'B': (('a',), ('A', 'a'))}
+        self.assertEqual(CFG._add_new_nonterminals(new_rules, initial_rules), {'A': (('a',),),
+                                                                               'B': (('a',), ('A', 'a'))})
+
+    def test_new_terminal_in_body(self):
+        initial_rules = {'A': (('a',),)}
+        new_rules = {'B': (('a',), ('B', 'a'))}
+        self.assertEqual(CFG._add_new_nonterminals(new_rules, initial_rules), {'A': (('a',),),
+                                                                               'B': (('a',), ('B', 'a'))})
+
+    def test_invalid_new_nonterminal(self):
+        initial_rules = {'A': (('a', 'b'),)}
+        new_rules1 = {'A': (('b',),)} # Collides with existing nonterminal
+        new_rules2 = {'a': (('b',),)} # Collides with existing terminal
+        with self.assertRaises(ValueError):
+            CFG._add_new_nonterminals(new_rules1, initial_rules)
+        with self.assertRaises(ValueError):
+            CFG._add_new_nonterminals(new_rules2, initial_rules)
+
+    def test_invalid_new_terminal(self):
+        initial_rules = {'A': (('a',),)}
+        new_rules = {'B': (('A', 'a', 'x'))} # 'A' and 'a' ok, 'x' invalid
+        with self.assertRaises(ValueError):
+            CFG._add_new_nonterminals(new_rules, initial_rules)
 
 
 
