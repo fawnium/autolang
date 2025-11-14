@@ -158,6 +158,8 @@ class CFG:
     def __str__(self):
         return 'CFG with nonterminals {' + ','.join(self.nonterminals) + '} and terminals {' + ','.join(self.terminals) + '}'
     
+    # UNION METHODS
+    
     # Rename symbols in CFG
     # TODO better collision checking
     @staticmethod
@@ -494,7 +496,41 @@ class CFG:
     def convert_proper_form(rules: dict[str, tuple[tuple[str, ...], ...]],
                             start: str) -> dict[str, tuple[tuple[str, ...], ...]]:
         raise NotImplementedError
+    
 
+    # Decide if CFG is in Chomsky Normal Form
+    @staticmethod
+    def _is_chomsky_normal_form(rules: dict[str, tuple[tuple[str, ...], ...]],
+                               start: str) -> bool:
+        '''
+         - for each rule, check if it is of one of these forms:
+            1. 'A -> BC' where all are nonterminals, and 'B' and 'C' cannot be the start terminal
+            2. 'A -> a' where A is a nonterminal and 'a' is a terminal
+            3. 'S -> ε' where S must be the start nonterminal
+        - if any rule fails the above, return False, else return True
+        '''
+        # Get symbol sets, (TODO maybe refactor into method args?)
+        nonterminals, terminals = CFG._extract(rules)
+
+        for nonterminal, substitutions in rules.items():
+            for sub in substitutions:
+                # Form 1
+                if len(sub) == 2:
+                    if not all(symbol in nonterminals for symbol in sub):
+                        return False
+                    if any(symbol == start for symbol in sub):
+                        return False
+                # Forms 2 and 3
+                elif len(sub) == 1:
+                    # Form 3
+                    if sub == ('',):
+                        if nonterminal != start:
+                            return False
+                    # Form 2
+                    else:
+                        if sub[0] not in terminals:
+                            return False
+        return True
 
     # Convert grammar to Chomsky normal form
     def to_chomsky_normal_form(self) -> 'CFG':

@@ -371,6 +371,9 @@ class TestRemoveOccurrencesOf(unittest.TestCase):
         self.assertEqual(set(CFG._remove_occurrences_of('A', initial)), set(expected))
 
 
+class TestRemoveBadEpsilonRules(unittest.TestCase):
+
+    pass
 
 
 
