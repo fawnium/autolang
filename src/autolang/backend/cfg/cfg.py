@@ -41,6 +41,7 @@ class CFG:
     def _canonise_rules(rules: dict[str, Iterable[Sequence[str] | str]]) -> dict[str, tuple[tuple[str, ...], ...]]:
         '''
         - iterate through each str: Iterable pair in rules dict
+            - NOTE empty string '' disallowed as a nonterminal
             - NOTE strings NOT allowed as dict values, even though they are iterable
         - the parent Iterable is a list of substitutions (i.e. rule bodies) for the given nonterminal str
             - NOTE empty iterable IS allowed even though it means nonterminal can't yield anything
@@ -69,6 +70,10 @@ class CFG:
 
             if not isinstance(nonterminal, str):
                 raise TypeError(f'Nonterminal \'{nonterminal}\' must be a string.')
+            # '' Cannot be a nonterminal
+            if not nonterminal:
+                raise ValueError('Empty string \'\' not allowed as a nonterminal.')
+
             if not isinstance(substitutions, Iterable):
                 raise TypeError(f'Substitutions for nonterminal \'{nonterminal}\' must be iterable.')
             # String as value not allowed (TODO allow if unambiguous?)

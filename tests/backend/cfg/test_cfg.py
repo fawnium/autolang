@@ -106,6 +106,11 @@ class TestCanoniseRules(unittest.TestCase):
         with self.assertRaises(TypeError):
             CFG._canonise_rules(rules)
 
+    def test_empty_nonterminal(self):
+        rules = {'': ['a', ['a', 'b']]}
+        with self.assertRaises(ValueError):
+            CFG._canonise_rules(rules)
+
     def test_substitutions_not_iterable(self):
         rules = {'A': 1}
         with self.assertRaises(TypeError):
