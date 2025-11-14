@@ -477,5 +477,40 @@ class TestRemoveBadEpsilonRules(unittest.TestCase):
         self.assertEqual(CFG.remove_bad_epsilon_rules(rules, 'S'), expected)
 
 
+class TestIsChomskyNormalForm(unittest.TestCase):
+
+    def test_true(self):
+        rules = {'S': (('',), ('a',), ('A', 'B'), ('A', 'C')),
+                 'A': (('a',), ('A', 'B')),
+                 'B': (('b',), ('A', 'C'), ('B', 'C')),
+                 'C': (('a',), ('B', 'A'), ('B', 'B'))}
+        self.assertTrue(CFG._is_chomsky_normal_form(rules, 'S'))
+
+    def test_false_terminal_in_compound(self):
+        rules = {'S': (('a',), ('A', 'A')),
+                 'A': (('a', 'A'))}
+        self.assertFalse(CFG._is_chomsky_normal_form(rules, 'S'))
+
+    def test_false_unit_nonterminal(self):
+        rules = {'S': (('A',),),
+                 'A': (('a',), ('A', 'A'))}
+        self.assertFalse(CFG._is_chomsky_normal_form(rules, 'S'))
+
+    def test_false_too_many_nonterminals(self):
+        rules = {'S': (('a',), ('A', 'B'),),
+                 'A': (('a',), ('A', 'B', 'A'))}
+        self.assertFalse(CFG._is_chomsky_normal_form(rules, 'S'))
+
+    def test_false_bad_erule(self):
+        rules = {'S': (('a',), ('A', 'A')),
+                 'A': (('',), ('a',), ('A', 'A'))}
+        self.assertFalse(CFG._is_chomsky_normal_form(rules, 'S'))
+
+    def test_false_start_in_body(self):
+        rules = {'S': (('',), ('A', 'A')),
+                 'A': (('a',), ('A', 'S'))}
+        self.assertFalse(CFG._is_chomsky_normal_form(rules, 'S'))
+    
+
 if __name__ == '__main__':
     unittest.main()
