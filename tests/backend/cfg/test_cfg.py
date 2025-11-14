@@ -268,6 +268,44 @@ class TestGetRulesContaining(unittest.TestCase):
         self.assertEqual(CFG._get_rules_containing('C', rules), expected_C)
 
 
+class TestAddNewRules(unittest.TestCase):
+
+    def test_single_rule(self):
+        initial_rules = {'A': (('a',), ('b',))}
+        new_rules = {'A': (('c',),)}
+        self.assertEqual(CFG._add_new_rules(new_rules, initial_rules), {'A': (('a',), ('b',), ('c',))})
+
+    def test_multiple_rules(self):
+        initial_rules = {'A': (('a',), ('b',))}
+        new_rules = {'A': (('c',), ('d',))}
+        self.assertEqual(CFG._add_new_rules(new_rules, initial_rules), {'A': (('a',), ('b',), ('c',), ('d',))})
+
+    def test_deduplication(self):
+        initial_rules = {'A': (('a',), ('b',))}
+        new_rules = {'A': (('a',),)}
+        self.assertEqual(CFG._add_new_rules(new_rules, initial_rules), {'A': (('a',), ('b',))})
+
+    def test_multiple_nonterminals(self):
+        initial_rules = {'A': (('a',), ('b',)),
+                         'B': (('c',), ('d',)),
+                         'C': (('e',), ('f',))}
+        # None added for 'C'
+        new_rules = {'A': (('x',),),
+                     'B': (('y',),)}
+        self.assertEqual(CFG._add_new_rules(new_rules, initial_rules), {'A': (('a',), ('b',), ('x',)), 
+                                                                        'B': (('c',), ('d',), ('y',)),
+                                                                        'C': (('e',), ('f',))})
+
+    def test_invalid_nonterminal(self):
+        initial_rules = {'A': (('a',), ('b',))}
+        new_rules = {'X': (('c',),)}
+        with self.assertRaises(ValueError):
+            CFG._add_new_rules(new_rules, initial_rules)
+
+
+
+
+
 
 
     
