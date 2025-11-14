@@ -348,11 +348,27 @@ class TestAddNewNonterminals(unittest.TestCase):
             CFG._add_new_nonterminals(new_rules, initial_rules)
 
 
+class TestRemoveOccurrencesOf(unittest.TestCase):
 
+    # NOTE 0 occurrences not tested as method won't be called
 
+    def test_one_occurrence(self):
+        self.assertEqual(CFG._remove_occurrences_of('A', ('u', 'A', 'v')), (('u', 'v'),)) # Prefix and suffix
+        self.assertEqual(CFG._remove_occurrences_of('A', ('A', 'v')), (('v',),)) # No prefix
+        self.assertEqual(CFG._remove_occurrences_of('A', ('u', 'A')), (('u',),)) # No suffix
+        # NOTE in isolated case ('A',) method won't be called
 
+    def test_two_occurrences(self):
+        initial = ('u', 'A', 'v', 'A', 'w')
+        expected = (('u', 'v', 'A', 'w'), ('u', 'A', 'v', 'w'), ('u', 'v', 'w'))
+        self.assertEqual(set(CFG._remove_occurrences_of('A', initial)), set(expected))
 
-    
+    def test_three_occurrences(self):
+        initial = ('u', 'A', 'v', 'A', 'w', 'A', 'x')
+        expected = (('u', 'v', 'A', 'w', 'A', 'x'), ('u', 'A', 'v', 'w', 'A', 'x'), ('u', 'A', 'v', 'A', 'w', 'x'),
+                    ('u', 'v', 'w', 'A', 'x'), ('u', 'v', 'A', 'w', 'x'), ('u', 'A', 'v', 'w', 'x'),
+                    ('u', 'v', 'w', 'x'))
+        self.assertEqual(set(CFG._remove_occurrences_of('A', initial)), set(expected))
 
 
 
