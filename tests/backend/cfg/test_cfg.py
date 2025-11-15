@@ -34,7 +34,7 @@ class TestCanoniseRules(unittest.TestCase):
         self.assertEqual(CFG._canonise_rules(rules), {'A': (('',),)})
 
     # Should be converted to conventional epsilon encoding
-    def test_empty_sub(self):
+    def test_empty_body(self):
         rules = {'A': [[], ['a']]}
         self.assertEqual(CFG._canonise_rules(rules), {'A': (('',), ('a',))})
 
@@ -111,18 +111,18 @@ class TestCanoniseRules(unittest.TestCase):
         with self.assertRaises(ValueError):
             CFG._canonise_rules(rules)
 
-    def test_substitutions_not_iterable(self):
+    def test_bodies_not_iterable(self):
         rules = {'A': 1}
         with self.assertRaises(TypeError):
             CFG._canonise_rules(rules)
 
-    def test_sub_not_sequence(self):
-        # Sub not even container
+    def test_body_not_sequence(self):
+        # Body not even container
         rules = {'A': [1]}
         with self.assertRaises(TypeError):
             CFG._canonise_rules(rules)
 
-        # Sub container but not ordered
+        # Body container but not ordered
         rules1 = {'A': [{'a', 'b'}]}
         with self.assertRaises(TypeError):
             CFG._canonise_rules(rules1)
@@ -218,35 +218,35 @@ class TestUnion(unittest.TestCase):
     pass # TODO along with _rename_symbols
 
 
-class TestDeleteSubFromSubstitutions(unittest.TestCase):
+class TestDeleteBodyFromBodies(unittest.TestCase):
 
     def test_missing_target(self):
-        subs = (('a',), ('b',), ('c',))
+        bodies = (('a',), ('b',), ('c',))
         target = ('d',)
         with self.assertRaises(ValueError):
-            CFG._delete_sub_from_substitutions(target, subs)
+            CFG._delete_body_from_bodies(target, bodies)
 
     def test_present_target(self):
-        subs = (('a',), ('b',), ('c',))
-        self.assertEqual(CFG._delete_sub_from_substitutions(('a',), subs), (('b',), ('c',)))
-        self.assertEqual(CFG._delete_sub_from_substitutions(('b',), subs), (('a',), ('c',)))
-        self.assertEqual(CFG._delete_sub_from_substitutions(('c',), subs), (('a',), ('b',)))
+        bodies = (('a',), ('b',), ('c',))
+        self.assertEqual(CFG._delete_body_from_bodies(('a',), bodies), (('b',), ('c',)))
+        self.assertEqual(CFG._delete_body_from_bodies(('b',), bodies), (('a',), ('c',)))
+        self.assertEqual(CFG._delete_body_from_bodies(('c',), bodies), (('a',), ('b',)))
 
 
-class TestGetRulesContaining(unittest.TestCase):
+class TestGetBodiesContaining(unittest.TestCase):
 
     def test_single_nonterminal(self):
         # As unit rule
         rules = {'A': (('a',), ('A',))}
-        self.assertEqual(CFG._get_rules_containing('A', rules), {'A': (('A',),)})
+        self.assertEqual(CFG._get_bodies_containing('A', rules), {'A': (('A',),)})
 
         # As compound rule, one occurrence per rule
         rules1 = {'A': (('a',), ('a', 'A'), ('A', 'b', 'a'))}
-        self.assertEqual(CFG._get_rules_containing('A', rules1), {'A': (('a', 'A'), ('A', 'b', 'a'))})
+        self.assertEqual(CFG._get_bodies_containing('A', rules1), {'A': (('a', 'A'), ('A', 'b', 'a'))})
 
         # As compound, multiple occurrences per rule
         rules2 = {'A': (('a',), ('A', 'A'), ('A', 'a', 'A'), ('A',), ('',))}
-        self.assertEqual(CFG._get_rules_containing('A', rules2), {'A': (('A', 'A'), ('A', 'a', 'A'), ('A',))})
+        self.assertEqual(CFG._get_bodies_containing('A', rules2), {'A': (('A', 'A'), ('A', 'a', 'A'), ('A',))})
 
     def test_multiple_nonterminals(self):
         # Only one occurrence of each nonterminal per rule - multiple should be covered in above
@@ -263,9 +263,9 @@ class TestGetRulesContaining(unittest.TestCase):
         expected_C = {'A': (('C',),),
                       'B': (('a', 'C'),),
                       'C': (('C', 'a'),)}
-        self.assertEqual(CFG._get_rules_containing('A', rules), expected_A)
-        self.assertEqual(CFG._get_rules_containing('B', rules), expected_B)
-        self.assertEqual(CFG._get_rules_containing('C', rules), expected_C)
+        self.assertEqual(CFG._get_bodies_containing('A', rules), expected_A)
+        self.assertEqual(CFG._get_bodies_containing('B', rules), expected_B)
+        self.assertEqual(CFG._get_bodies_containing('C', rules), expected_C)
 
 
 class TestAddNewRules(unittest.TestCase):
@@ -607,7 +607,8 @@ class TestIsChomskyNormalForm(unittest.TestCase):
 
     def test_false_too_many_nonterminals(self):
         rules = {'S': (('a',), ('A', 'B'),),
-                 'A': (('a',), ('A', 'B', 'A'))}
+                 'A': (('a',), ('A', 'B', 'A')),
+                 'B': (('b',),)}
         self.assertFalse(CFG._is_chomsky_normal_form(rules, 'S'))
 
     def test_false_bad_erule(self):
