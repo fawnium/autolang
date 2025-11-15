@@ -489,8 +489,79 @@ class CFG:
     # Return rules mapping with unit rules 'A -> B' removed
     @staticmethod
     def remove_unit_rules(rules: dict[str, tuple[tuple[str, ...], ...]],
-                          start: str) -> dict[str, tuple[tuple[str, ...], ...]]:
-        raise NotImplementedError
+                          ) -> dict[str, tuple[tuple[str, ...], ...]]:
+        '''
+        - `rules`: rules map to remove unit rules from
+
+        # NOTE assumes no epsilon rules present
+
+        - for all rules 'A -> B':
+            - remove 'A -> B'
+            - for all rules 'B -> u' (NOTE 'u' is an arbitrary-length rule body):
+                - add rule 'A -> u', unless it is a previously removed unit rule
+        - repeat above until no unit rules remain
+        '''
+        # Don't modify rules in-place
+        rules_return = rules.copy()
+
+        nonterminals, terminals = CFG._extract(rules_return)
+
+        # Initialise unit rules to remove
+        to_remove = [] # List of all tuples ('A', 'B') such that 'A -> B' is a rule
+        for nonterminal, substitutions in rules_return.items():
+            for sub in substitutions:
+                # Unit rule if only one symbol, which is a nonterminal
+                if len(sub) == 1 and sub[0] in nonterminals:
+                    to_remove.append((nonterminal, sub[0]))
+        
+        # Track removed unit rules so they are not re-added
+        removed = set() # Pairs ('A', 'B') where 'A -> B' already removed
+
+        # Remove unit rules until none remaining
+        while to_remove:
+            # Choose next rule 'A -> B'
+            nonterminal_head, nonterminal_body = to_remove.pop(0)
+
+            # Remove rule
+            rules_return[nonterminal_head] = CFG._delete_sub_from_substitutions((nonterminal_body,), rules_return[nonterminal_head])
+            removed.add((nonterminal_head, nonterminal_body))
+
+            # Initialise replacement rules to add, i.e. 'A -> u'
+            # Maps nonterminal head to bodies to add
+            # NOTE in this case should only be one key, namely 'nonterminal_head'
+            rules_replacement = {}
+
+            # For all rules 'B -> u', add rule 'A -> u' if not previously removed unit rule
+            for sub in (sub for sub in rules_return[nonterminal_body]):
+
+                # Case 'A -> u' is a unit rule
+                if len(sub) == 1:
+
+                    # Case 'u' is a nonterminal and 'A -> u' already removed - don't add
+                    if (nonterminal_head, sub[0]) in removed:
+                        continue
+
+                    # Case 'u' is a terminal - add
+                    elif sub[0] in terminals:
+                        _append_dict_value(nonterminal_head, sub, rules_replacement)
+
+                    # Case 'u' is a nonterminal and 'A -> u' not already removed - add and schedule for later removal
+                    else:
+                        _append_dict_value(nonterminal_head, sub, rules_replacement)
+                        # Ensure no duplicates in removal workload
+                        if (nonterminal_head, sub[0]) not in to_remove:
+                            to_remove.append((nonterminal_head, sub[0]))
+
+                # Case 'A -> u' is a compound rule - always add
+                else:
+                    _append_dict_value(nonterminal_head, sub, rules_replacement)
+
+            # Convert list of new rules to tuple before adding
+            rules_replacement = {key: tuple(val) for key, val in rules_replacement.items()}
+            rules_return = CFG._add_new_rules(rules_replacement, rules_return)
+            
+        return rules_return
+    
     
     # Return rules with all bodies converted to normal form by introducting new nonterminals
     @staticmethod
