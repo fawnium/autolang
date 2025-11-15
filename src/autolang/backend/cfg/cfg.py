@@ -493,12 +493,13 @@ class CFG:
         '''
         - `rules`: rules map to remove unit rules from
 
-        # NOTE assumes no epsilon rules present
+        NOTE assumes no epsilon rules present
 
         - for all rules 'A -> B':
             - remove 'A -> B'
             - for all rules 'B -> u' (NOTE 'u' is an arbitrary-length rule body):
                 - add rule 'A -> u', unless it is a previously removed unit rule
+                    - NOTE this can add a new unit rule to remove later
         - repeat above until no unit rules remain
         '''
         # Don't modify rules in-place
