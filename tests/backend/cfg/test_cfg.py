@@ -477,6 +477,115 @@ class TestRemoveBadEpsilonRules(unittest.TestCase):
         self.assertEqual(CFG.remove_bad_epsilon_rules(rules, 'S'), expected)
 
 
+class TestRemoveUnitRules(unittest.TestCase):
+
+    # NOTE changing the order of rule bodies in tuple may fail tests
+    # even though the grammar would still be correct
+
+    # NOTE epsilon rules should not be present
+
+    def test_no_unit_rules(self):
+        rules = {'S': (('A', 'B'), ('a', 'b')),
+                 'A': (('A', 'S'), ('a', 'b')),
+                 'B': (('B', 'S'), ('b', 'a'))}
+        expected = rules
+        self.assertEqual(CFG.remove_unit_rules(rules), expected)
+
+    def test_terminal_not_unit(self):
+        rules = {'S': (('A', 'B'),),
+                 'A': (('b',), ('B',)), # A -> B should be removed, A -> b should not
+                 'B': (('a', 'b'),)}
+        expected = {'S': (('A', 'B'),),
+                    'A': (('b',), ('a', 'b')),
+                    'B': (('a', 'b'),)}
+        self.assertEqual(CFG.remove_unit_rules(rules), expected)
+
+    def test_single_unit_rule(self):
+        rules = {'S': (('A',),),
+                 'A': (('a',), ('a', 'b'))}
+        expected = {'S': (('a',), ('a', 'b')),
+                    'A': (('a',), ('a', 'b'))}
+        self.assertEqual(CFG.remove_unit_rules(rules), expected)
+
+    def test_multiple_unit_rules_same_head(self):
+        rules = {'S': (('A',), ('B',)),
+                 'A': (('a',), ('a', 'b')),
+                 'B': (('c',), ('c', 'd'))}
+        expected = {'S': (('a',), ('c',), ('a', 'b'), ('c', 'd')),
+                    'A': (('a',), ('a', 'b')),
+                    'B': (('c',), ('c', 'd'))}
+        self.assertEqual(CFG.remove_unit_rules(rules), expected)
+
+    def test_multiple_unit_rules_different_heads(self):
+        # Same body for each occurrence
+        rules = {'S': (('A', 'B'), ('A', 'C')),
+                 'A': (('a',), ('C',)),
+                 'B': (('b',), ('C',)),
+                 'C': (('c',), ('a', 'b', 'c'))}
+        expected = {'S': (('A', 'B'), ('A', 'C')),
+                    'A': (('a',), ('c',), ('a', 'b', 'c')),
+                    'B': (('b',), ('c',), ('a', 'b', 'c')),
+                    'C': (('c',), ('a', 'b', 'c'))}
+        self.assertEqual(CFG.remove_unit_rules(rules), expected)
+
+        # Different body for each occurrence
+        rules1 = {'S': (('A', 'B'), ('A', 'C')),
+                  'A': (('a',), ('C',)),
+                  'B': (('b',), ('D',)),
+                  'C': (('c',), ('a', 'c')),
+                  'D': (('d',), ('b', 'd'))}
+        expected1 = {'S': (('A', 'B'), ('A', 'C')),
+                     'A': (('a',), ('c',), ('a', 'c')),
+                     'B': (('b',), ('d',), ('b', 'd')),
+                     'C': (('c',), ('a', 'c')),
+                     'D': (('d',), ('b', 'd'))}
+        self.assertEqual(CFG.remove_unit_rules(rules1), expected1)
+
+    def test_single_unit_rule_self_head(self):
+        rules = {'S': (('a',), ('A', 'A')),
+                 'A': (('a', 'b'), ('A',))}
+        expected = {'S': (('a',), ('A', 'A')),
+                    'A': (('a', 'b'),)} # Self-unit should just be removed
+        self.assertEqual(CFG.remove_unit_rules(rules), expected)
+
+    def test_removed_not_readded(self):
+        rules = {'A': (('a',), ('B',), ('C',)),
+                 'B': (('b',), ('C',)),
+                 'C': (('c',), ('B',))}
+        expected = {'A': (('a',), ('b',), ('c',)),
+                    'B': (('b',), ('c',)),
+                    'C': (('b',), ('c',))}
+        self.assertEqual(CFG.remove_unit_rules(rules), expected)
+        
+    def test_cyclic_removal(self):
+        rules = {'A': (('a',), ('B',)),
+                 'B': (('b',), ('C',)),
+                 'C': (('c',), ('A',)),}
+        expected = {'A': (('a',), ('b',), ('c',)),
+                    'B': (('a',), ('b',), ('c',)),
+                    'C': (('a',), ('b',), ('c',))}
+        self.assertEqual(CFG.remove_unit_rules(rules), expected)
+
+    def test_recursive_removal(self):
+        rules = {'S': (('a',), ('A',)),
+                 'A': (('b',), ('B',)),
+                 'B': (('c',), ('C',),),
+                 'C': (('a', 'b', 'c'),)}
+        expected = {'S': (('a',), ('b',), ('c',), ('a', 'b', 'c')),
+                    'A': (('b',), ('c',), ('a', 'b', 'c')),
+                    'B': (('c',), ('a', 'b', 'c')),
+                    'C': (('a', 'b', 'c'),)}
+        self.assertEqual(CFG.remove_unit_rules(rules), expected)
+
+    def test_deduplication(self):
+        rules = {'S': (('A',), ('a', 'b')),
+                 'A': (('a',), ('a', 'b'))} # ('a', 'b') already rule for S
+        expected = {'S': (('a',), ('a', 'b')),
+                    'A': (('a',), ('a', 'b'))}
+        self.assertEqual(CFG.remove_unit_rules(rules), expected)
+
+
+
 class TestIsChomskyNormalForm(unittest.TestCase):
 
     def test_true(self):
