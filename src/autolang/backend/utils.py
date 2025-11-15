@@ -149,8 +149,11 @@ def _append_dict_value(key: Any,
                       entry: Any, 
                       dic: dict[Any, list[Any]]) -> dict[Any, list[Any]]:
     '''
-    - If key exists in dic, append entry to it
-    - If key doesn't exist, initialise it with new list [entry]
+    Append `entry` to list keyed by `key`, or initialise list if `key` not present
+
+    - `entry`: object to append to specified list
+    - `key`: key of list to append to
+    - `dic`: parent dict
     '''
     if key in dic:
         dic[key].append(entry)
