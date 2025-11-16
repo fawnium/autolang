@@ -791,7 +791,6 @@ class CFG:
         return rules_return
     
     # Return rules map with all rules of body length greater than 2 removed
-    # TODO refactor loops after completing
     @staticmethod
     def remove_rules_body_length_greater_than_2(rules: RulesMap) -> RulesMap:
         '''
