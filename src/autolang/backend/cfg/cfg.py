@@ -29,6 +29,12 @@ NOTE naming conventions in this file:
 
 '''
 
+# Type alias for canonical rules map
+# Maps nonterminal strings to tuple of respective rule bodies
+# Each individual body is a tuple of strings
+RulesMap = dict[str, tuple[tuple[str, ...], ...]]
+
+
 class CFG:
 
     def __init__(self,
@@ -58,7 +64,7 @@ class CFG:
         
     # Ensure rules dict is correctly formatted and convert containers to tuples for consistency
     @staticmethod
-    def _canonise_rules(rules: dict[str, Iterable[Sequence[str] | str]]) -> dict[str, tuple[tuple[str, ...], ...]]:
+    def _canonise_rules(rules: dict[str, Iterable[Sequence[str] | str]]) -> RulesMap:
         '''
         Params
         - `rules`: rules map, may not be in canonical form
@@ -149,7 +155,7 @@ class CFG:
 
     # Establish terminals and nonterminals from rules
     @staticmethod
-    def _extract(rules: dict[str, tuple[tuple[str, ...], ...]]) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    def _extract(rules: RulesMap) -> tuple[tuple[str, ...], tuple[str, ...]]:
         '''
         Params
         - `rules`: canonised rules map to get symbols from
@@ -331,7 +337,7 @@ class CFG:
     # Return all rules that contain given symbol in body
     @staticmethod
     def _get_bodies_containing(target: str,
-                               rules: dict[str, tuple[tuple[str, ...], ...]]) -> dict[str, tuple[tuple[str, ...], ...]]:
+                               rules: RulesMap) -> RulesMap:
         '''
         Params
         - `target`: symbol to query presence of within rule bodies
@@ -363,7 +369,7 @@ class CFG:
     # TODO handle e-rules, should they be considered length 0 or 1? Currently 1
     @staticmethod
     def _get_bodies_of_length(length: int,
-                              rules: dict[str, tuple[tuple[str, ...], ...]]) -> dict[str, tuple[tuple[str, ...], ...]]:
+                              rules: RulesMap) -> RulesMap:
         '''
         Params
         - `length`: length of rule bodies to filter by
@@ -389,8 +395,8 @@ class CFG:
     # Insert new collection of rules to existing rules map
     # NOTE ONLY for adding new rules for existing nonterminals, NOT for adding new nonterminals
     @staticmethod
-    def _add_new_rules(new_rules: dict[str, tuple[tuple[str, ...], ...]],
-                       initial_rules: dict[str, tuple[tuple[str, ...], ...]]) -> dict[str, tuple[tuple[str, ...], ...]]:
+    def _add_new_rules(new_rules: RulesMap,
+                       initial_rules: RulesMap) -> RulesMap:
         '''
         Params
         - `new_rules`: collection of new rules to insert, keyed by nonterminal
@@ -427,8 +433,8 @@ class CFG:
     # Add new nonterminal (and corresponding rules) to existing rules map
     # NOTE cannot be used to add rules for existing nonterminals
     @staticmethod
-    def _add_new_nonterminals(new_rules: dict[str, tuple[tuple[str, ...], ...]],
-                              initial_rules: dict[str, tuple[tuple[str, ...], ...]]) -> dict[str, tuple[tuple[str, ...], ...]]:
+    def _add_new_nonterminals(new_rules: RulesMap,
+                              initial_rules: RulesMap) -> RulesMap:
         '''
         Params
         - `new_rules`: collection of rules for new nonterminals to add
@@ -532,8 +538,8 @@ class CFG:
 
     # Return rules map with bad ε-rules removed
     @staticmethod
-    def remove_bad_epsilon_rules(rules: dict[str, tuple[tuple[str, ...], ...]],
-                                 start: str) -> dict[str, tuple[tuple[str, ...], ...]]:
+    def remove_bad_epsilon_rules(rules: RulesMap,
+                                 start: str) -> RulesMap:
         '''
         Params
         - `rules`: rules map to remove bad ε-rules from
@@ -620,8 +626,8 @@ class CFG:
 
     # Return rules map with unit rules 'A -> B' removed
     @staticmethod
-    def remove_unit_rules(rules: dict[str, tuple[tuple[str, ...], ...]],
-                          ) -> dict[str, tuple[tuple[str, ...], ...]]:
+    def remove_unit_rules(rules: RulesMap,
+                          ) -> RulesMap:
         '''
         Params
         - `rules`: rules map to remove unit rules from
@@ -705,18 +711,23 @@ class CFG:
             
         return rules_return
     
+    # Return rules map with all rules of body length greater than 2 removed
+    @staticmethod
+    def remove_rules_body_length_greater_than_2(rules: RulesMap
+                                                ) -> RulesMap:
+        pass
     
     # Return rules with all bodies converted to normal form by introducting new nonterminals
     # TODO
     @staticmethod
-    def convert_proper_form(rules: dict[str, tuple[tuple[str, ...], ...]],
-                            start: str) -> dict[str, tuple[tuple[str, ...], ...]]:
+    def convert_proper_form(rules: RulesMap,
+                            start: str) -> RulesMap:
         raise NotImplementedError
     
 
     # Decide if CFG is in Chomsky Normal Form
     @staticmethod
-    def _is_chomsky_normal_form(rules: dict[str, tuple[tuple[str, ...], ...]],
+    def _is_chomsky_normal_form(rules: RulesMap,
                                start: str) -> bool:
         '''
         Params
