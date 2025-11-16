@@ -741,6 +741,7 @@ class CFG:
         return rules_return
     
     # Return rules map with all rules of body length greater than 2 removed
+    # TODO refactor loops after completing
     @staticmethod
     def remove_rules_body_length_greater_than_2(rules: RulesMap) -> RulesMap:
         '''
@@ -753,7 +754,7 @@ class CFG:
         - NOTE assumes no bad epsilon rules and no unit rules
 
         Implementation
-        - 
+        - TODO
 
 
         Return
@@ -763,15 +764,54 @@ class CFG:
         rules_return = rules.copy()
 
         # All rules to remove
-        
+        to_remove = CFG._get_bodies_length_greater_than(2, rules_return)
+
+        # Iteratively remove all rules
+        for head, bodies in to_remove.items():
+            for body in bodies:
+                # Store body length
+                length = len(body)
+
+                # Remove original rule 'A -> a1 a2 ... an'
+                rules_return[head] = CFG._delete_body_from_bodies(body, rules_return[head])
+
+                # Initialise replacement rules to add
+                # NOTE does NOT include first new rule 'A -> a1 A1', since headed by existing nonterminal
+                rules_replacement = {} # NOTE could probably go outside loop in this method, since to_remove never grows
+
+                # Introduce `length - 2` new unique nonterminals
+                new_nonterminals = []
+                for i in range(length - 2):
+                    new_nonterminal = CFG._get_new_unique_nonterminal() # TODO
+                    new_nonterminals.append(new_nonterminal)
+
+                # Introduce corresponding `length - 1` new rules
+                # 'A -> a1 A1', 'A1 -> a2 A2', ..., 'An-2 -> an-1 an'
+                for i in range(length - 1):
+                    # First symbol always from original body
+                    # Second symbol is new nonterminal, except in final case where original symbol
+                    new_body = (body[i], new_nonterminals[i] if (i != length - 2) else body[i + 1])
+
+                    # Handle first new rule differently, since headed by existing nonterminal
+                    # Add directly instead of caching in rules_replacement
+                    # TODO generalise with new rule adding helper
+                    if i == 0:
+                        rules_return = CFG._add_new_rules({head: (new_body,)}, rules_return)
+                    else:
+                        # NOTE all new nonterminals only have single rule, so don't need to use _append_dict_value()
+                        rules_replacement[new_nonterminals[i - 1]] = (new_body,)
+
+                # Add remaining new rules
+                rules_return = CFG._add_new_nonterminals(rules_replacement, rules_return)
+
+        return rules_return
+
+
+
+
 
     
-    # Return rules with all bodies converted to normal form by introducting new nonterminals
-    # TODO
-    @staticmethod
-    def convert_proper_form(rules: RulesMap,
-                            start: str) -> RulesMap:
-        raise NotImplementedError
+    
     
 
     # Decide if CFG is in Chomsky Normal Form
