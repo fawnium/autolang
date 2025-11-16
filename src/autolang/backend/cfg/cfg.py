@@ -23,6 +23,7 @@ NOTE naming conventions in this file:
     - NOTE in particular, if body is a terminal then it is not a unit rule
 
 'compound rule': rule with body length more than 1 (non-standard term I believe)
+'binary rule': rule with body length 2
 
 'e-rule': rule whose body is the empty symbol '', a.k.a. 'ε-rule', 'epsilon-rule'
 'bad e-rule': e-rule whose head is not the start nonterminal
@@ -262,7 +263,43 @@ class CFG:
         new_nonterminals = tuple(f'#CHAIN_{initial_nonterminal}_{rule_index}_{j}'
                                  for j in range(1, chain_length + 1))
         return new_nonterminals
+    
+    # For Chomsky normal form, removing binary rules with terminal in body
+    @staticmethod
+    def _new_nonterminals_chomsky_bin(initial_nonterminal: str,
+                                      terminal: str,
+                                      ) -> str:
+        '''
+        Params
+        - `initial_nonterminal`: head of rule being eliminated
+        - `terminal`: terminal in body of head's rule
+
+        Overview
+        Generate new nonterminal name, specifically for eliminating binary rules with a terminal in body.
+
+        The new nonterminal is of the form '#BIN_A_a' where:
+        - 'A' is the nonterminal with binary rule containing 'a' in its body
+        - 'a' is the terminal with body of the rule
+
+        Examples
+
+        If 'A' has a rule 'A -> a1 a2' where (WLOG) a1 is a terminal, the new nonterminal is:
         
+        '#BIN_A_a1'
+
+        If 'A' has a rule 'A -> a1 a2' where BOTH a1 and a2 are terminals, the two new nonterminals are:
+
+        '#BIN_A_a1', '#BIN_A_a2'
+
+        These would require two separate calls of this method.
+
+        NOTE the '#BIN_' prefix is to make accidental name collisions less likely.
+
+        Return
+        - new nonterminal for specific rule elimination
+        '''
+        return f'#BIN_{initial_nonterminal}_{terminal}'
+    
 
     '''
     UNION - TODO WIP

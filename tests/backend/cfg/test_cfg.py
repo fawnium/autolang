@@ -213,6 +213,11 @@ class TestNewNonterminalsChomskyChain(unittest.TestCase):
     pass # TODO
 
 
+class TestNewNonterminalsChomskyBin(unittest.TestCase):
+
+    pass # TODO
+
+
 class TestRenameSymbols(unittest.TestCase):
 
     pass # TODO only after method has been rewritten
