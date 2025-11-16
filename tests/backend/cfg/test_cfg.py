@@ -233,6 +233,11 @@ class TestDeleteBodyFromBodies(unittest.TestCase):
         self.assertEqual(CFG._delete_body_from_bodies(('c',), bodies), (('a',), ('b',)))
 
 
+class TestFilterBodies(unittest.TestCase):
+
+    pass # TODO
+
+
 class TestGetBodiesContaining(unittest.TestCase):
 
     def test_single_nonterminal(self):
@@ -269,6 +274,11 @@ class TestGetBodiesContaining(unittest.TestCase):
 
 class TestGetBodiesOfLength(unittest.TestCase):
     
+    pass # TODO
+
+
+class TestGetBodiesLengthGreaterThan(unittest.TestCase):
+
     pass # TODO
 
 

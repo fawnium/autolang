@@ -1,7 +1,7 @@
 from autolang.backend.utils import disjoint_symbol, _append_dict_value
 from autolang.visuals.utils_visuals import eps
 
-from collections.abc import Iterable, Container, Generator, Sequence
+from collections.abc import Iterable, Generator, Sequence, Callable
 
 '''
 Context-Free Grammar Class
@@ -333,6 +333,37 @@ class CFG:
             raise ValueError(f'Rule body \'{target}\' not present in tuple, cannot delete.')
 
         return tuple(body for body in bodies if body != target)
+    
+    # General rule filtering helper, used by below methods
+    @staticmethod
+    def _filter_bodies(rules: RulesMap,
+                       condition: Callable[[tuple[str, ...]], bool]) -> RulesMap:
+        '''
+        Params
+        - `rules`: rules map to filter
+        - `condition`: statement about a rule body to filter by
+
+        Overview
+        Return new rules map that only contains rules whose body satisfies given condition
+        - `condition` should be a function whose input is a rule body that outputs a bool
+            - e.g. a lambda function
+        - Rules in filtered map are precisely those whose body returns True for condition
+
+        Return
+        - new rules map filtered to only contain rules whose body satisfies given condition
+        '''
+        # Initialise return dict
+        filtered_rules = {}
+
+        for head, bodies in rules.items():
+            for body in bodies:
+                if condition(body):
+                    _append_dict_value(head, body, filtered_rules)
+
+        # Convert lists to tuples for return
+        filtered_rules = {head: tuple(bodies) for head, bodies in filtered_rules.items()}
+        return filtered_rules
+
 
     # Return all rules that contain given symbol in body
     @staticmethod
@@ -346,18 +377,8 @@ class CFG:
         Return
         - new rules map filtered to only contain rules where target symbol occurs in body
         '''
-        # Initialise return dict
-        filtered_rules = {}
-
-        for head, bodies in rules.items():
-            for body in bodies:
-                # Check if symbol contained in body
-                if target in body:
-                    # Update list of rules for nonterminal, adding key if none already
-                    _append_dict_value(head, body, filtered_rules)
-        
-        # Convert lists to tuples for return
-        filtered_rules = {head: tuple(bodies) for head, bodies in filtered_rules.items()}
+        filtered_rules = CFG._filter_bodies(rules,
+                                            lambda body: target in body)
 
         # Raise error if no occurences - likely invalid symbol
         if not filtered_rules:
@@ -378,16 +399,25 @@ class CFG:
         Return
         - new rules map filtered to only contain rules with body of given length
         '''
-        # Initialise return dict
-        filtered_rules = {}
+        filtered_rules = CFG._filter_bodies(rules,
+                                            lambda body: len(body) == length)
 
-        for head, bodies in rules.items():
-            for body in bodies:
-                if len(body) == length:
-                    _append_dict_value(head, body, filtered_rules)
+        return filtered_rules
+    
+    # Return all rules with body of length greater than specified length
+    @staticmethod
+    def _get_bodies_length_greater_than(length: int,
+                                        rules: RulesMap) -> RulesMap:
+        '''
+        Params
+        - `length`: length of rule bodies to filter by
+        - `rules`: rules map to query
 
-        # Convert lists to tuples for return
-        filtered_rules = {head: tuple(bodies) for head, bodies in filtered_rules.items()}
+        Return
+        - new rules map filtered to only contain rules with body of given length
+        '''
+        filtered_rules = CFG._filter_bodies(rules,
+                                            lambda body: len(body) > length)
 
         return filtered_rules
                 
@@ -626,8 +656,7 @@ class CFG:
 
     # Return rules map with unit rules 'A -> B' removed
     @staticmethod
-    def remove_unit_rules(rules: RulesMap,
-                          ) -> RulesMap:
+    def remove_unit_rules(rules: RulesMap) -> RulesMap:
         '''
         Params
         - `rules`: rules map to remove unit rules from
@@ -635,7 +664,7 @@ class CFG:
         Overview
         Construct new rules map with no unit rules
         - doesn't modify initial rules map
-        - NOTE assumes no epsilon rules present
+        - NOTE assumes no bad epsilon rules present
 
         Implementation
         Use the standard unit rule removal process:
@@ -713,9 +742,29 @@ class CFG:
     
     # Return rules map with all rules of body length greater than 2 removed
     @staticmethod
-    def remove_rules_body_length_greater_than_2(rules: RulesMap
-                                                ) -> RulesMap:
-        pass
+    def remove_rules_body_length_greater_than_2(rules: RulesMap) -> RulesMap:
+        '''
+        Params
+        - `rules`: rules map to remove rules from
+
+        Overview
+        Construct new rules map with no rules whose body has length >2
+        - doesn't modify initial rules map
+        - NOTE assumes no bad epsilon rules and no unit rules
+
+        Implementation
+        - 
+
+
+        Return
+        - new rules map with no rule bodies of length >2
+        '''
+        # Don't modify rules in-place
+        rules_return = rules.copy()
+
+        # All rules to remove
+        
+
     
     # Return rules with all bodies converted to normal form by introducting new nonterminals
     # TODO
