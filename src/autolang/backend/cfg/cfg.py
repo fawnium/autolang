@@ -217,6 +217,54 @@ class CFG:
         return 'CFG with nonterminals {' + ','.join(self.nonterminals) + '} and terminals {' + ','.join(self.terminals) + '}'
     
     '''
+    NAME GENERATION HELPERS
+    '''
+
+    # For Chomsky normal form, removing rules with body length > 2
+    @staticmethod
+    def _new_nonterminals_chomsky_chain(initial_nonterminal: str,
+                                        rule_index: int,
+                                        chain_length: int) -> tuple[str, ...]:
+        '''
+        Params
+        - `initial_nonterminal`: head of rule being eliminated
+        - `rule_index`: number of rule being eliminated in list of head's long rules
+        - `chain_length`: number of new nonterminals required (length of body minus 2)
+
+        Overview
+        Generate tuple of new nonterminal names, specifically for elminating rules with body length > 2.
+        
+        Each new nonterminal is of the form '#CHAIN_A_i_j' where:
+        - 'A' is the initial nonterminal for which long rule being eliminated
+        - 'i' indexes all of 'A's rules with length > 2, as a subsequence of 'A's total rules
+        - 'j' is the index of the specific new nonterminal within a given elimination
+        
+        Examples
+
+        If 'A' has only one rule with body length > 2, 'A -> a1 a2 ... an', the new nonterminals are:
+
+        '#CHAIN_A_1_1', '#CHAIN_A_1_2', ..., '#CHAIN_A_1_{n-2}'
+
+        If 'A' has two rules with body length > 2, 'A -> a1 a2 ... an' and 'A -> b1 b2 ... bm', new nonterminals are:
+
+        '#CHAIN_A_1_1', '#CHAIN_A_1_2', ..., '#CHAIN_A_1_{n-2}'
+        '#CHAIN_A_2_1', '#CHAIN_A_2_2', ..., '#CHAIN_A_2_{m-2}'
+
+        These would come from two separate calls of this method.
+
+        NOTE the rule bodies for all nonterminals are in lenlex order, so index 'i' is deterministic.
+
+        NOTE the '#CHAIN_' prefix is to make accidental name collisions less likely.
+        
+        Return
+        - tuple of new nonterminals for a specific rule elimination
+        '''
+        new_nonterminals = tuple(f'#CHAIN_{initial_nonterminal}_{rule_index}_{j}'
+                                 for j in range(1, chain_length + 1))
+        return new_nonterminals
+        
+
+    '''
     UNION - TODO WIP
     '''
     
@@ -449,6 +497,8 @@ class CFG:
         # Check all nonterminals already exist
         if any(nonterminal not in initial_rules for nonterminal in new_rules):
             raise ValueError('Cannot add rules for nonterminals not already present in rules map.')
+        
+        # TODO check symbols in rule bodies to prevent collisions?
 
         # Update bodies for each nonterminal
         for nonterminal in new_rules:
@@ -460,7 +510,7 @@ class CFG:
 
         return rules_return
     
-    # Add new nonterminal (and corresponding rules) to existing rules map
+    # Add new nonterminals (and corresponding rules) to existing rules map
     # NOTE cannot be used to add rules for existing nonterminals
     @staticmethod
     def _add_new_nonterminals(new_rules: RulesMap,
@@ -754,8 +804,12 @@ class CFG:
         - NOTE assumes no bad epsilon rules and no unit rules
 
         Implementation
-        - TODO
-
+        - for all rules 'A -> a1 a2 ... an' where n > 2:
+            - remove original rule
+            - introduce n - 2 new nonterminals 'A1', 'A2', ..., 'A{n-2}'
+                - index them by rule number to ensure they are unique to specific rule
+            - add n - 1 new rules 'A -> a1 A1', 'A1 -> a2 A2', ..., 'A{n-2} -> a{n-1} an'
+        - return new rules map 
 
         Return
         - new rules map with no rule bodies of length >2
@@ -768,7 +822,7 @@ class CFG:
 
         # Iteratively remove all rules
         for head, bodies in to_remove.items():
-            for body in bodies:
+            for i, body in enumerate(bodies):
                 # Store body length
                 length = len(body)
 
@@ -777,29 +831,33 @@ class CFG:
 
                 # Initialise replacement rules to add
                 # NOTE does NOT include first new rule 'A -> a1 A1', since headed by existing nonterminal
-                rules_replacement = {} # NOTE could probably go outside loop in this method, since to_remove never grows
+                rules_replacement = {} # TODO could probably go outside loop in this method, since to_remove never grows
 
-                # Introduce `length - 2` new unique nonterminals
-                new_nonterminals = []
-                for i in range(length - 2):
-                    new_nonterminal = CFG._get_new_unique_nonterminal() # TODO
-                    new_nonterminals.append(new_nonterminal)
+                # Introduce `length - 2` new nonterminals
+                new_nonterminals = CFG._new_nonterminals_chomsky_chain(head,
+                                                                       i,
+                                                                       length - 2)
 
                 # Introduce corresponding `length - 1` new rules
                 # 'A -> a1 A1', 'A1 -> a2 A2', ..., 'An-2 -> an-1 an'
-                for i in range(length - 1):
-                    # First symbol always from original body
-                    # Second symbol is new nonterminal, except in final case where original symbol
-                    new_body = (body[i], new_nonterminals[i] if (i != length - 2) else body[i + 1])
+                for j in range(length - 1):
 
-                    # Handle first new rule differently, since headed by existing nonterminal
-                    # Add directly instead of caching in rules_replacement
-                    # TODO generalise with new rule adding helper
-                    if i == 0:
+                    # Create each new rule body
+                     
+                    # Final rule - both symbols nonterminals
+                    if j == length - 2:
+                        new_body = (body[j], body[j + 1])
+                    # Non-final rule - first symbol new terminal
+                    else:
+                        new_body = (body[j], new_nonterminals[j])
+
+                    # Add new rules
+
+                    # First rule headed by existing nonterminal
+                    if j == 0:
                         rules_return = CFG._add_new_rules({head: (new_body,)}, rules_return)
                     else:
-                        # NOTE all new nonterminals only have single rule, so don't need to use _append_dict_value()
-                        rules_replacement[new_nonterminals[i - 1]] = (new_body,)
+                        rules_replacement[new_nonterminals[j - 1]] = (new_body,)
 
                 # Add remaining new rules
                 rules_return = CFG._add_new_nonterminals(rules_replacement, rules_return)
@@ -817,7 +875,7 @@ class CFG:
     # Decide if CFG is in Chomsky Normal Form
     @staticmethod
     def _is_chomsky_normal_form(rules: RulesMap,
-                               start: str) -> bool:
+                                start: str) -> bool:
         '''
         Params
         - `rules`: rules map to test
