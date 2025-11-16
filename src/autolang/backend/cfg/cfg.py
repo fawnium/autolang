@@ -335,7 +335,7 @@ class CFG:
         '''
         Params
         - `target`: symbol to query presence of within rule bodies
-        - `rules`: map of rules to query
+        - `rules`: rules map to query
 
         Return
         - new rules map filtered to only contain rules where target symbol occurs in body
@@ -358,6 +358,33 @@ class CFG:
             raise ValueError(f'Symbol \'{target}\' not found in any rule body.')
 
         return filtered_rules
+    
+    # Return all rules with body of specified length
+    # TODO handle e-rules, should they be considered length 0 or 1? Currently 1
+    @staticmethod
+    def _get_bodies_of_length(length: int,
+                              rules: dict[str, tuple[tuple[str, ...], ...]]) -> dict[str, tuple[tuple[str, ...], ...]]:
+        '''
+        Params
+        - `length`: length of rule bodies to filter by
+        - `rules`: rules map to query
+
+        Return
+        - new rules map filtered to only contain rules with body of given length
+        '''
+        # Initialise return dict
+        filtered_rules = {}
+
+        for head, bodies in rules.items():
+            for body in bodies:
+                if len(body) == length:
+                    _append_dict_value(head, body, filtered_rules)
+
+        # Convert lists to tuples for return
+        filtered_rules = {head: tuple(bodies) for head, bodies in filtered_rules.items()}
+
+        return filtered_rules
+                
     
     # Insert new collection of rules to existing rules map
     # NOTE ONLY for adding new rules for existing nonterminals, NOT for adding new nonterminals

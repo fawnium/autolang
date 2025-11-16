@@ -267,6 +267,10 @@ class TestGetBodiesContaining(unittest.TestCase):
         self.assertEqual(CFG._get_bodies_containing('B', rules), expected_B)
         self.assertEqual(CFG._get_bodies_containing('C', rules), expected_C)
 
+class TestGetBodiesOfLength(unittest.TestCase):
+    
+    pass # TODO
+
 
 class TestAddNewRules(unittest.TestCase):
 
