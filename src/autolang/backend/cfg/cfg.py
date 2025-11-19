@@ -1,7 +1,7 @@
 from autolang.backend.utils import disjoint_symbol, _append_dict_value
 from autolang.visuals.utils_visuals import eps
 
-from collections.abc import Iterable, Generator, Sequence, Callable
+from collections.abc import Iterable, Generator, Sequence, Callable, Container
 
 '''
 Context-Free Grammar Class
@@ -489,94 +489,57 @@ class CFG:
         return filtered_rules
                 
     
-    # Insert new collection of rules to existing rules map
+    # Insert new collection of rule bodies for existing nonterminals
     # NOTE ONLY for adding new rules for existing nonterminals, NOT for adding new nonterminals
     @staticmethod
-    def _add_new_rules(new_rules: RulesMap,
-                       initial_rules: RulesMap) -> RulesMap:
+    def _add_new_bodies(new_bodies: RulesMap,
+                        initial_rules: RulesMap) -> RulesMap:
         '''
-        Params
-        - `new_rules`: collection of new rules to insert, keyed by nonterminal
-        - `rules`: rules map to add rules to
-
-        Overview
-        Merge new_rules into initial_rules and return new rules dict
-        - head of all new rules MUST be an existing nonterminal
-        - adding duplicate rules is fine as they are ignored
-        - lenlex order of bodies is preserved
-        - NOTE no new symbols can be introduced
-            - use _add_new_nonterminals() for rules headed by new nonterminal
-
-        Return
-        - new rules map that is the union of rules from new_rules and initial_rules
+        TODO docstring
         '''
-        # Don't modify original rules map
         rules_return = initial_rules.copy()
 
         # Check all nonterminals already exist
-        if any(nonterminal not in initial_rules for nonterminal in new_rules):
+        if any(nonterminal not in initial_rules for nonterminal in new_bodies):
             raise ValueError('Cannot add rules for nonterminals not already present in rules map.')
         
-        # TODO check symbols in rule bodies to prevent collisions?
-
         # Update bodies for each nonterminal
-        for nonterminal in new_rules:
-            # Merged tuple of initial and new rules, without duplicates, sorted by lenlex
-            updated = tuple(sorted(set(initial_rules[nonterminal]) | set(new_rules[nonterminal]), 
+        for nonterminal in new_bodies:
+            updated_bodies = tuple(sorted(set(initial_rules[nonterminal]) | set(new_bodies[nonterminal]), 
                                    key=lambda body: (len(body), body)))
-            # Update bodies in final rules map
-            rules_return[nonterminal] = updated
+            rules_return[nonterminal] = updated_bodies
 
         return rules_return
     
     # Add new nonterminals (and corresponding rules) to existing rules map
     # NOTE cannot be used to add rules for existing nonterminals
     @staticmethod
-    def _add_new_nonterminals(new_rules: RulesMap,
+    def _add_new_nonterminals(new_nonterminals: Iterable[str],
                               initial_rules: RulesMap) -> RulesMap:
         '''
-        Params
-        - `new_rules`: collection of rules for new nonterminals to add
-        - `initial_rules`: rules map to merge additions into
+        TODO docstring
 
-        Overview
-        Add collection of new nonterminals and their respective rules to existing rules map, return new rules map
-        - head of all new rules MUST be a new nonterminal
-        - bodies of new rules can contain existing terminals, existing nonterminals, new nonterminals, and nothing else
-            - in particular, new terminals NOT allowed
-        - no duplicates and lenlex order of bodies is assumed of new_rules (TODO enforce this?)
-        - NOTE adding new rules for existing nonterminals is NOT allowed
-            - this is done via _add_new_rules()
-
-        Implementation
-        - ensure new nonterminals don't collide with any existing symbols
-        - ensure all symbols in new_rules are either existing terminals, existing nonterminals, or new nonterminals
-        - merge new_rules into initial_rules by defining keys (guaranteed new keys by above)
-        - return new rules map
-
-        Return
-        - new rules map
         '''
-        rules_return = initial_rules.copy() # Don't modify intial_rules
+        rules_return = initial_rules.copy()
 
-        existing_nonterminals, existing_terminals = CFG._extract(initial_rules)
-        new_nonterminals, new_terminals = CFG._extract(new_rules)
+        # Check for collisions
 
-        # Check new nonterminal collisions
-        for nonterminal in new_nonterminals:
-            if nonterminal in existing_nonterminals or nonterminal in existing_terminals:
-                raise ValueError(f'Cannot add new nonterminal \'{nonterminal}\' as it collides with an existing symbol.')
-        
-        # Check no new terminals
-        # New symbols that are not new nonterminals must either be existing terminals or existing nonterminals
-        for new_symbol in new_terminals:
-            if new_symbol not in existing_terminals and new_symbol not in existing_nonterminals:
-                raise ValueError(f'Unrecognised symbol \'{new_symbol}\' in new rule body.')
+        for head, bodies in rules_return.items():
+
+            if any(new_nonterminal == head for new_nonterminal in new_nonterminals):
+                raise ValueError(f'Cannot add new nonterminal: name collision for \'{head}\'.')
             
-        # Merge new nonterminals into return dict
-        for head, bodies in new_rules.items():
-            rules_return[head] = bodies
+            for body in bodies:
+                for symbol in body:
+                    if any(new_nonterminal == symbol for new_nonterminal in new_nonterminals):
+                        raise ValueError(f'Cannot add new nonterminal: name collision for new nonterminal \'{symbol}\'.')
+                    
+        # Add new nonterminals
+        for new_nonterminal in new_nonterminals:
+            rules_return[new_nonterminal] = tuple()
+
         return rules_return
+        
 
     
     # Return tuple of bodies with all combinations of occurrences of target symbol removed from given body
@@ -714,13 +677,15 @@ class CFG:
                         # Generate new rules with each occurrence of nonterminal omitted, and schedule them to add
                         new_bodies = CFG._remove_occurrences_of(nonterminal, body)
                         for new_body in new_bodies:
+                            # Ensure new rule is not a removed e-rule
+                            if not new_body and head in removed:
+                                continue
                             _append_dict_value(head, new_body, rules_replacement)
 
             # Convert new rule bodies from lists to tuples before adding
             rules_replacement = {head: tuple(bodies) for head, bodies in rules_replacement.items()}
             # Add new rules with nonterminal omitted (NOTE duplicates ignored and lenlex order preserved)
-            rules_return = CFG._add_new_rules(rules_replacement, rules_return)
-
+            rules_return = CFG._add_new_bodies(rules_replacement, rules_return)
         return rules_return
 
     # Return rules map with unit rules 'A -> B' removed
@@ -805,7 +770,7 @@ class CFG:
             # Convert new rule bodies from lists to tuples before adding
             rules_replacement = {head: tuple(bodies) for head, bodies in rules_replacement.items()}
             # Add new rules (NOTE duplicates ignored and lenlex order preserved)
-            rules_return = CFG._add_new_rules(rules_replacement, rules_return)
+            rules_return = CFG._add_new_bodies(rules_replacement, rules_return)
             
         return rules_return
     
@@ -835,6 +800,11 @@ class CFG:
         # Don't modify rules in-place
         rules_return = rules.copy()
 
+        initial_nonterminals = CFG._extract(rules_return)[0]
+
+        # All new rules to add
+        rules_replacement = {}
+
         # All rules to remove
         to_remove = CFG._get_bodies_length_greater_than(2, rules_return)
 
@@ -846,10 +816,6 @@ class CFG:
 
                 # Remove original rule 'A -> a1 a2 ... an'
                 rules_return[head] = CFG._delete_body_from_bodies(body, rules_return[head])
-
-                # Initialise replacement rules to add
-                # NOTE does NOT include first new rule 'A -> a1 A1', since headed by existing nonterminal
-                rules_replacement = {} # TODO could probably go outside loop in this method, since to_remove never grows
 
                 # Introduce `length - 2` new nonterminals
                 new_nonterminals = CFG._new_nonterminals_chomsky_chain(head,
@@ -869,16 +835,17 @@ class CFG:
                     else:
                         new_body = (body[j], new_nonterminals[j])
 
-                    # Add new rules
+                    # Schedule new rule to add
 
                     # First rule headed by existing nonterminal
-                    if j == 0:
-                        rules_return = CFG._add_new_rules({head: (new_body,)}, rules_return)
-                    else:
-                        rules_replacement[new_nonterminals[j - 1]] = (new_body,)
-
-                # Add remaining new rules
-                rules_return = CFG._add_new_nonterminals(rules_replacement, rules_return)
+                    _append_dict_value(head if j == 0 else new_nonterminals[j - 1],
+                                       new_body,
+                                       rules_replacement)
+                    
+        # Add all new rules
+        rules_return = CFG._add_new_nonterminals(tuple(nt for nt in rules_replacement if nt not in initial_nonterminals),
+                                                 rules_return)
+        rules_return = CFG._add_new_bodies(rules_replacement, rules_return)
 
         return rules_return
     
@@ -894,7 +861,7 @@ class CFG:
         # Don't modify rules in-place
         rules_return = rules.copy()
 
-        initial_nonterminals, terminals = CFG._extract(rules_return)
+        terminals = CFG._extract(rules_return)[1]
 
         # Extract terminals to replace
         terminals_to_replace = set()
@@ -907,12 +874,13 @@ class CFG:
                             
         # Generate new nonterminals 'A_a' for terminals to replace 'a'
         replace_map = {terminal: CFG._new_nonterminal_chomsky_bin(terminal)
-                                for terminal in terminals_to_replace}
+                       for terminal in terminals_to_replace}
         
         # Add all new rules 'A_a -> a'
-        rules_return = CFG._add_new_nonterminals({replace_map[terminal]: ((terminal,),)
-                                                  for terminal in terminals_to_replace},
-                                                  rules_return)
+        rules_return = CFG._add_new_nonterminals(tuple(nt for nt in replace_map.values()),
+                                                 rules_return)
+        rules_return = CFG._add_new_bodies({nt: ((t,),) for t, nt in replace_map.items()},
+                                           rules_return)
         
         # Replace terminals in existing binary rules
         for head, bodies in tuple(rules_return.items()):
@@ -974,7 +942,8 @@ class CFG:
         return True
 
     # Convert grammar to Chomsky normal form
-    def to_chomsky_normal_form(self) -> 'CFG':
+    def _to_chomsky_normal_form(rules: RulesMap,
+                                start: str) -> 'CFG':
         '''
         Returns a *new* CFG in chomsky normal form via the canonical process:
         - add `new_start` nonterminal and rule 'new_start -> start'
@@ -983,18 +952,35 @@ class CFG:
         - remove all unit rules
         - convert remaining rules to correct form
         '''
-        # Generate distinct new start symbol and initial rule
-        new_start = disjoint_symbol('S', set(self.nonterminals) | set(self.terminals))
+        nonterminals, terminals = CFG._extract(rules)
+
+        new_start = disjoint_symbol('S', set(nonterminals) | set(terminals))
         
-        # Add new start rule
-        new_rules = CFG._add_new_nonterminals({new_start: ((self.start,),)}, self.rules)
+        new_rules = CFG._add_new_nonterminals([new_start], rules)
+        new_rules = CFG._add_new_bodies({new_start: ((start,),)}, new_rules)
+
         new_rules = CFG.remove_bad_epsilon_rules(new_rules, new_start)
         new_rules = CFG.remove_unit_rules(new_rules)
-
         new_rules = CFG.remove_rules_body_length_greater_than_2(new_rules)
         new_rules = CFG.remove_binary_rules_containing_terminal(new_rules)
         
         return CFG(new_rules, new_start)
+    
+
+    '''
+    PUBLIC API
+    '''
+
+    def to_chomsky_normal_form(self) -> 'CFG':
+        return CFG._to_chomsky_normal_form(self.rules, self.start)
+    
+    
+        
+
+
+
+
+
 
 
 

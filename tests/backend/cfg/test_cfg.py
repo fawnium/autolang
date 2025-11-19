@@ -292,22 +292,22 @@ class TestGetBodiesLengthGreaterThan(unittest.TestCase):
     pass # TODO
 
 
-class TestAddNewRules(unittest.TestCase):
+class TestAddNewBodies(unittest.TestCase):
 
     def test_single_rule(self):
         initial_rules = {'A': (('a',), ('b',))}
         new_rules = {'A': (('c',),)}
-        self.assertEqual(CFG._add_new_rules(new_rules, initial_rules), {'A': (('a',), ('b',), ('c',))})
+        self.assertEqual(CFG._add_new_bodies(new_rules, initial_rules), {'A': (('a',), ('b',), ('c',))})
 
     def test_multiple_rules(self):
         initial_rules = {'A': (('a',), ('b',))}
         new_rules = {'A': (('c',), ('d',))}
-        self.assertEqual(CFG._add_new_rules(new_rules, initial_rules), {'A': (('a',), ('b',), ('c',), ('d',))})
+        self.assertEqual(CFG._add_new_bodies(new_rules, initial_rules), {'A': (('a',), ('b',), ('c',), ('d',))})
 
     def test_deduplication(self):
         initial_rules = {'A': (('a',), ('b',))}
         new_rules = {'A': (('a',),)}
-        self.assertEqual(CFG._add_new_rules(new_rules, initial_rules), {'A': (('a',), ('b',))})
+        self.assertEqual(CFG._add_new_bodies(new_rules, initial_rules), {'A': (('a',), ('b',))})
 
     def test_multiple_nonterminals(self):
         initial_rules = {'A': (('a',), ('b',)),
@@ -316,60 +316,46 @@ class TestAddNewRules(unittest.TestCase):
         # None added for 'C'
         new_rules = {'A': (('x',),),
                      'B': (('y',),)}
-        self.assertEqual(CFG._add_new_rules(new_rules, initial_rules), {'A': (('a',), ('b',), ('x',)), 
-                                                                        'B': (('c',), ('d',), ('y',)),
-                                                                        'C': (('e',), ('f',))})
+        self.assertEqual(CFG._add_new_bodies(new_rules, initial_rules), {'A': (('a',), ('b',), ('x',)), 
+                                                                         'B': (('c',), ('d',), ('y',)),
+                                                                         'C': (('e',), ('f',))})
 
     # New nonterminals added via .add_new_nonterminals()
     def test_invalid_nonterminal(self):
         initial_rules = {'A': (('a',), ('b',))}
         new_rules = {'X': (('c',),)}
         with self.assertRaises(ValueError):
-            CFG._add_new_rules(new_rules, initial_rules)
+            CFG._add_new_bodies(new_rules, initial_rules)
 
 
 class TestAddNewNonterminals(unittest.TestCase):
 
     def test_single_new_nonterminal(self):
         initial_rules = {'A': (('a',),)}
-        new_rules = {'B': (('a',),)}
-        self.assertEqual(CFG._add_new_nonterminals(new_rules, initial_rules), {'A': (('a',),),
-                                                                               'B': (('a',),)})
+        new_nonterminals = ['B']
+        self.assertEqual(CFG._add_new_nonterminals(new_nonterminals, initial_rules), 
+                         {'A': (('a',),),
+                          'B': tuple()})
 
     def test_multiple_new_nonterminals(self):
         initial_rules = {'A': (('a',),)}
-        new_rules = {'B': (('a',),),
-                     'C': (('a',),)}
-        self.assertEqual(CFG._add_new_nonterminals(new_rules, initial_rules), {'A': (('a',),),
-                                                                               'B': (('a',),),
-                                                                               'C': (('a',),)})
-        
-    def test_existing_terminal_in_body(self):
-        initial_rules = {'A': (('a',),)}
-        new_rules = {'B': (('a',), ('A', 'a'))}
-        self.assertEqual(CFG._add_new_nonterminals(new_rules, initial_rules), {'A': (('a',),),
-                                                                               'B': (('a',), ('A', 'a'))})
+        new_nonterminals = ['B', 'C']
+        self.assertEqual(CFG._add_new_nonterminals(new_nonterminals, initial_rules), 
+                         {'A': (('a',),),
+                          'B': tuple(),
+                          'C': tuple()})
 
-    def test_new_terminal_in_body(self):
-        initial_rules = {'A': (('a',),)}
-        new_rules = {'B': (('a',), ('B', 'a'))}
-        self.assertEqual(CFG._add_new_nonterminals(new_rules, initial_rules), {'A': (('a',),),
-                                                                               'B': (('a',), ('B', 'a'))})
-
-    def test_invalid_new_nonterminal(self):
+    def test_collision_with_nonterminal(self):
         initial_rules = {'A': (('a', 'b'),)}
-        new_rules1 = {'A': (('b',),)} # Collides with existing nonterminal
-        new_rules2 = {'a': (('b',),)} # Collides with existing terminal
+        new_nonterminals = ['A']
         with self.assertRaises(ValueError):
-            CFG._add_new_nonterminals(new_rules1, initial_rules)
-        with self.assertRaises(ValueError):
-            CFG._add_new_nonterminals(new_rules2, initial_rules)
+            CFG._add_new_nonterminals(new_nonterminals, initial_rules)
 
-    def test_invalid_new_terminal(self):
+    def test_collision_with_terminal(self):
         initial_rules = {'A': (('a',),)}
-        new_rules = {'B': (('A', 'a', 'x'))} # 'A' and 'a' ok, 'x' invalid
+        new_nonterminals = ['a']
         with self.assertRaises(ValueError):
-            CFG._add_new_nonterminals(new_rules, initial_rules)
+            CFG._add_new_nonterminals(new_nonterminals, initial_rules)
 
 
 class TestRemoveOccurrencesOf(unittest.TestCase):
@@ -479,7 +465,7 @@ class TestRemoveBadEpsilonRules(unittest.TestCase):
                     'C': (('c',),)}
         self.assertEqual(CFG.remove_bad_epsilon_rules(rules, 'S'), expected)
 
-    def test_removed_not_readded(self):
+    def test_removed_not_readded_by_unit(self):
         # If 'B -> ε' removed first, shouldn't be re-added when 'A -> ε' removed, and vice versa
         rules = {'S': (('A',), ('B',)),
                  'A': (('',), ('B',), ('a',)),
@@ -488,6 +474,13 @@ class TestRemoveBadEpsilonRules(unittest.TestCase):
                     'A': (('B',), ('a',)),
                     'B': (('A',), ('b',))}
         self.assertEqual(CFG.remove_bad_epsilon_rules(rules, 'S'), expected)
+
+    def test_removed_not_readded_by_compound(self):
+        rules = {'A': (('B',),),
+                 'B': (('',), ('B', 'B'), ('a', 'B', 'b'))} # ('B', 'B') induces an empty body
+        expected = {'A': (('',), ('B',),),
+                    'B': (('B',), ('B', 'B'), ('a', 'b'), ('a', 'B', 'b'))}
+        self.assertEqual(CFG.remove_bad_epsilon_rules(rules, 'A'), expected)
 
     def test_multiple_bad_erules(self):
         rules = {'S': (('A',), ('B', 'C')),
@@ -611,14 +604,80 @@ class TestRemoveUnitRules(unittest.TestCase):
 
 class TestRemoveRulesBodyLengthGreaterThan2(unittest.TestCase):
 
-    pass # TODO
+    def test_single_rule_length_3(self):
+        rules = {'A': (('a', 'b', 'c'),)}
+        expected = {'A': (('a', '#CHAIN_A_1_1'),),
+                    '#CHAIN_A_1_1': (('b', 'c'),)}
+        self.assertEqual(CFG.remove_rules_body_length_greater_than_2(rules), expected)
+
+    def test_single_rule_length_4(self):
+        rules = {'A': (('a', 'b', 'c', 'd'),)}
+        expected = {'A': (('a', '#CHAIN_A_1_1'),),
+                    '#CHAIN_A_1_1': (('b', '#CHAIN_A_1_2'),),
+                    '#CHAIN_A_1_2': (('c', 'd'),)}
+        self.assertEqual(CFG.remove_rules_body_length_greater_than_2(rules), expected)
+
+    def test_multiple_rules_same_head(self):
+        rules = {'A': (('a', 'b', 'c'), ('x', 'y', 'z'))}
+        expected = {'A': (('a', '#CHAIN_A_1_1'), ('x', '#CHAIN_A_2_1')),
+                    '#CHAIN_A_1_1': (('b', 'c'),),
+                    '#CHAIN_A_2_1': (('y', 'z'),)}
+        self.assertEqual(CFG.remove_rules_body_length_greater_than_2(rules), expected)
+
+    def test_multiple_rules_different_head(self):
+        rules = {'A': (('a', 'b', 'c'),),
+                 'B': (('x', 'y', 'z'),)}
+        expected = {'A': (('a', '#CHAIN_A_1_1'),),
+                    'B': (('x', '#CHAIN_B_1_1'),),
+                    '#CHAIN_A_1_1': (('b', 'c'),),
+                    '#CHAIN_B_1_1': (('y', 'z'),)}
+        self.assertEqual(CFG.remove_rules_body_length_greater_than_2(rules), expected)
+
+    def test_initial_rule_occurs_in_body(self):
+        rules = {'A': (('a', 'A', 'b'),)}
+        expected = {'A': (('a', '#CHAIN_A_1_1'),),
+                    '#CHAIN_A_1_1': (('A', 'b'),)}
+        self.assertEqual(CFG.remove_rules_body_length_greater_than_2(rules), expected)
 
 
 class TestRemoveBinaryRulesContainingTerminal(unittest.TestCase):
 
-    pass # TODO
+    def test_single_terminal_first_element(self):
+        rules = {'A': (('a', 'B'),),
+                 'B': (('b',),)}
+        expected = {'A': (('#BIN_a', 'B'),),
+                    'B': (('b',),),
+                    '#BIN_a': (('a',),)}
+        self.assertEqual(CFG.remove_binary_rules_containing_terminal(rules), expected)
 
+    def test_single_terminal_second_element(self):
+        rules = {'A': (('a',), ('B', 'b'),),
+                 'B': (('b',),)}
+        expected = {'A': (('a',), ('B', '#BIN_b')),
+                    'B': (('b',),),
+                    '#BIN_b': (('b',),)}
+        self.assertEqual(CFG.remove_binary_rules_containing_terminal(rules), expected)
 
+    def test_terminals_both_elements(self):
+        rules = {'A': (('a',), ('a', 'b')),
+                 'B': (('b',),)}
+        expected = {'A': (('a',), ('#BIN_a', '#BIN_b')),
+                    'B': (('b',),),
+                    '#BIN_a': (('a',),),
+                    '#BIN_b': (('b',),)}
+        self.assertEqual(CFG.remove_binary_rules_containing_terminal(rules), expected)
+
+    def test_single_terminal_multiple_bodies(self):
+        rules = {'A': (('a', 'B'), ('C', 'a'),),
+                 'B': (('b',), ('a', 'B')),
+                 'C': (('c',), ('a', 'A'))}
+        expected = {'A': (('#BIN_a', 'B'), ('C', '#BIN_a'),),
+                    'B': (('b',), ('#BIN_a', 'B')),
+                    'C': (('c',), ('#BIN_a', 'A')),
+                    '#BIN_a': (('a',),)}
+        self.assertEqual(CFG.remove_binary_rules_containing_terminal(rules), expected)
+
+    
 class TestIsChomskyNormalForm(unittest.TestCase):
 
     def test_true(self):
