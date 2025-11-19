@@ -266,39 +266,21 @@ class CFG:
     
     # For Chomsky normal form, removing binary rules with terminal in body
     @staticmethod
-    def _new_nonterminals_chomsky_bin(initial_nonterminal: str,
-                                      terminal: str,
-                                      ) -> str:
+    def _new_nonterminal_chomsky_bin(terminal: str) -> str:
         '''
         Params
-        - `initial_nonterminal`: head of rule being eliminated
-        - `terminal`: terminal in body of head's rule
+        - `terminal`: terminal to introduce new nonterminal for
 
         Overview
-        Generate new nonterminal name, specifically for eliminating binary rules with a terminal in body.
-
-        The new nonterminal is of the form '#BIN_A_a' where:
-        - 'A' is the nonterminal with binary rule containing 'a' in its body
-        - 'a' is the terminal with body of the rule
-
-        Examples
-
-        If 'A' has a rule 'A -> a1 a2' where (WLOG) a1 is a terminal, the new nonterminal is:
-        
-        '#BIN_A_a1'
-
-        If 'A' has a rule 'A -> a1 a2' where BOTH a1 and a2 are terminals, the two new nonterminals are:
-
-        '#BIN_A_a1', '#BIN_A_a2'
-
-        These would require two separate calls of this method.
+        Generate new nonterminal name of the form '#BIN_a',
+        where 'a' is the given nonterminal     
 
         NOTE the '#BIN_' prefix is to make accidental name collisions less likely.
 
         Return
         - new nonterminal for specific rule elimination
         '''
-        return f'#BIN_{initial_nonterminal}_{terminal}'
+        return f'#BIN_{terminal}'
     
 
     '''
@@ -871,7 +853,7 @@ class CFG:
 
                 # Introduce `length - 2` new nonterminals
                 new_nonterminals = CFG._new_nonterminals_chomsky_chain(head,
-                                                                       i,
+                                                                       i + 1,
                                                                        length - 2)
 
                 # Introduce corresponding `length - 1` new rules
@@ -899,13 +881,47 @@ class CFG:
                 rules_return = CFG._add_new_nonterminals(rules_replacement, rules_return)
 
         return rules_return
-
-
-
-
-
     
-    
+
+    @staticmethod
+    def remove_binary_rules_containing_terminal(rules: RulesMap) -> RulesMap:
+        '''
+        TODO docstring
+
+        - NOTE assumes no bad epsilon rules, no unit rules, no rules with body length > 2
+
+        '''
+        # Don't modify rules in-place
+        rules_return = rules.copy()
+
+        initial_nonterminals, terminals = CFG._extract(rules_return)
+
+        # Extract terminals to replace
+        terminals_to_replace = set()
+        for head, bodies in rules_return.items():
+            for body in bodies:
+                if len(body) == 2:
+                    for symbol in body:
+                        if symbol in terminals:
+                            terminals_to_replace.add(symbol)
+                            
+        # Generate new nonterminals 'A_a' for terminals to replace 'a'
+        replace_map = {terminal: CFG._new_nonterminal_chomsky_bin(terminal)
+                                for terminal in terminals_to_replace}
+        
+        # Add all new rules 'A_a -> a'
+        rules_return = CFG._add_new_nonterminals({replace_map[terminal]: ((terminal,),)
+                                                  for terminal in terminals_to_replace},
+                                                  rules_return)
+        
+        # Replace terminals in existing binary rules
+        for head, bodies in tuple(rules_return.items()):
+            # Don't modify symbol if nonterminal
+            new_bodies = tuple((tuple(replace_map.get(symbol, symbol) for symbol in body) if len(body) == 2 else body) 
+                               for body in bodies)
+            rules_return[head] = new_bodies
+
+        return rules_return
     
 
     # Decide if CFG is in Chomsky Normal Form
@@ -970,17 +986,13 @@ class CFG:
         # Generate distinct new start symbol and initial rule
         new_start = disjoint_symbol('S', set(self.nonterminals) | set(self.terminals))
         
+        # Add new start rule
+        new_rules = CFG._add_new_nonterminals({new_start: ((self.start,),)}, self.rules)
+        new_rules = CFG.remove_bad_epsilon_rules(new_rules, new_start)
+        new_rules = CFG.remove_unit_rules(new_rules)
 
-        
-    
-        # Sketch outline
-        new_rules = CFG.remove_bad_epsilon_rules(self.rules, self.nonterminals, self.start)
-        new_rules = CFG.remove_unit_rules(new_rules, self.nonterminals, self.start)
-        new_rules = CFG.convert_proper_form(new_rules, self.nonterminals, self.start)
-        # Rule to yield initial start from new start
-        new_rules[new_start] = ((self.start,),)
-
-        raise NotImplementedError
+        new_rules = CFG.remove_rules_body_length_greater_than_2(new_rules)
+        new_rules = CFG.remove_binary_rules_containing_terminal(new_rules)
         
         return CFG(new_rules, new_start)
 

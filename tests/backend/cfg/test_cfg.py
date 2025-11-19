@@ -213,7 +213,7 @@ class TestNewNonterminalsChomskyChain(unittest.TestCase):
     pass # TODO
 
 
-class TestNewNonterminalsChomskyBin(unittest.TestCase):
+class TestNewNonterminalChomskyBin(unittest.TestCase):
 
     pass # TODO
 
@@ -614,8 +614,9 @@ class TestRemoveRulesBodyLengthGreaterThan2(unittest.TestCase):
     pass # TODO
 
 
+class TestRemoveBinaryRulesContainingTerminal(unittest.TestCase):
 
-
+    pass # TODO
 
 
 class TestIsChomskyNormalForm(unittest.TestCase):
