@@ -943,7 +943,7 @@ class CFG:
 
     # Convert grammar to Chomsky normal form
     def _to_chomsky_normal_form(rules: RulesMap,
-                                start: str) -> 'CFG':
+                                start: str) -> RulesMap:
         '''
         Returns a *new* CFG in chomsky normal form via the canonical process:
         - add `new_start` nonterminal and rule 'new_start -> start'
@@ -970,8 +970,12 @@ class CFG:
     '''
     PUBLIC API
     '''
-
+    
+    def is_chomsky_normal_form(self) -> bool:
+        return CFG._is_chomsky_normal_form(self.rules, self.start)
+    
     def to_chomsky_normal_form(self) -> 'CFG':
+        # TODO CFG with new start remembered
         return CFG._to_chomsky_normal_form(self.rules, self.start)
     
     
