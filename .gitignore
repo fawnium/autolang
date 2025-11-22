@@ -21,6 +21,7 @@ dist/
 # Logs and notes
 *.log
 TODO.txt
+progress_logs.md
 
 # Test files
 main.py
